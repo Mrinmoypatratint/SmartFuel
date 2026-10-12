@@ -23,6 +23,8 @@ ignore = [
     "S324",    # Probable use of insecure hash functions (used for non-crypto hashes)
     "B008",    # Do not perform function call in argument defaults (FastAPI Depends)
     "F401",    # Module imported but unused
+    "F841",    # Local variable assigned but unused
+    "S107",    # Possible hardcoded password in test function default
     "B007",    # Loop control variable not used
     "B905",    # zip without explicit strict
 ]
