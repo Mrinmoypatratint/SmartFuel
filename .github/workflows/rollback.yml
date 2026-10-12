@@ -48,7 +48,7 @@ jobs:
           echo "Rollback authorization confirmed."
 
       - name: Setup SSH Connection
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ github.event.inputs.target_environment == 'production' && secrets.PRODUCTION_SSH_KEY || secrets.STAGING_SSH_KEY }}
 
