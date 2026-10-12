@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartFuel | Secure Sign In</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="login-shell">
+    <div class="login-layout">
+      <section class="login-showcase">
+        <div class="login-hero-badge">● COMMERCIAL PILOT SOFTWARE</div>
+        <h1>Professional ANPR inspection software for CNG hydrotesting demo workflows.</h1>
+        <p>Upload a vehicle image or use a USB/webcam, convert the number plate into text, verify it against your protected database, and instantly show the result in one secure dashboard.</p>
+        <div class="login-points">
+          <div class="login-point"><strong>AI Inspection</strong><span>Image upload and browser camera capture with OCR-based number plate recognition.</span></div>
+          <div class="login-point"><strong>Protected Company Dashboard</strong><span>Vehicle records, cylinder details, hydrotesting status, alerts, reports and user roles.</span></div>
+          <div class="login-point"><strong>Demo Data for Client Prototype</strong><span>Fictional records only. No government API or official validation is connected in this phase.</span></div>
+        </div>
+      </section>
+
+      <section class="login-wrap">
+        <div class="logob">
+          <span class="sfmark">SF</span>
+          <span>SMARTFUEL<br><small>ANPR INTELLIGENCE PLATFORM</small></span>
+        </div>
+        <h1>Welcome back</h1>
+        <p>Sign in to the inspection control center.</p>
+        <form id="loginForm">
+          <label for="email">WORK EMAIL</label>
+          <input id="email" type="email" autocomplete="username" required placeholder="admin@example.com">
+          <label for="password">PASSWORD</label>
+          <input id="password" type="password" autocomplete="current-password" required placeholder="Your secure password">
+          <button id="loginBtn" type="submit">Sign in securely →</button>
+          <div class="error" id="error" role="alert"></div>
+        </form>
+        <div class="demotag"><b>DEMONSTRATION SYSTEM</b><br>All sample vehicle and hydrotest records are synthetic. No government API is connected.</div>
+      </section>
+    </div>
+  </main>
+  <script src="/static/login.js" defer></script>
+</body>
+</html>

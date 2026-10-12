@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartFuel | CNG Station Decision Display</title><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/cng-display.css"></head>
+<body class="cng-kiosk">
+<header class="kiosk-top"><div class="identity"><span class="kiosk-logo">SF</span><div><strong>SmartFuel</strong><span>CNG Compliance Demonstration</span></div></div><div class="kiosk-tools"><span class="kiosk-clock" id="clock">--:--</span><button id="goFullscreen" class="btn outline">Full screen</button><a class="btn outline" href="/">Dashboard</a></div></header>
+<main class="kiosk-main">
+<div class="kiosk-header"><div><div class="eyebrow">STATION OPERATOR DISPLAY</div><h1>Vehicle CNG verification status</h1><p>Updated from saved inspections • Private station view • Demonstration data only</p></div><div class="kiosk-filter"><label for="station">Monitoring station</label><select id="station"><option value="">Select station</option></select></div></div>
+<div class="display-main" id="displayMain">
+<section class="decision-hero waiting" id="hero"><div class="hero-topline"><span id="decisionTag">WAITING FOR INSPECTION</span><span id="lastTime">—</span></div><div class="hero-label">VEHICLE REGISTRATION</div><div class="hero-plate" id="plate">— — — —</div><div class="owner-meta" id="ownerName">Sample owner: Not recorded</div><h2 id="headline">Waiting for a vehicle scan</h2><p id="instruction">Scan a plate in the SmartFuel inspection dashboard to display its result here.</p></section>
+<section class="decision-detail"><div class="decision-detail-head"><h2>Inspection checks</h2><span class="pill muted" id="inspectionRef">NO RESULT</span></div><div class="checks" id="checks"><div class="empty-state">No vehicle checked yet.</div></div><div class="reason-box" id="reasonBox" hidden><h3>Why CNG should be held or reviewed</h3><ul id="reasons"></ul></div><div class="kiosk-meta"><span id="source">—</span><a class="btn outline" target="_blank" rel="noopener" id="reportLink" hidden>Open sample report</a></div></section>
+</div>
+<div class="recent-head"><h2>Recent station inspections</h2><span id="connection">Connecting…</span></div><div id="recent" class="kiosk-recent"><div class="empty-state">No saved inspections.</div></div>
+<div class="kiosk-footnote">PILOT / DEMONSTRATION ONLY • THIS SCREEN DOES NOT CHECK GOVERNMENT RECORDS OR AUTHORIZE OR REFUSE REAL CNG SUPPLY • FOLLOW THE STATION'S APPROVED PROCEDURES</div>
+</main><script src="/static/cng-display.js" defer></script></body></html>
