@@ -5,8 +5,8 @@ from urllib.parse import quote
 ROOT=Path(__file__).resolve().parent
 print('SMARTFUEL ANPR v2 — LOCAL DEMO (not public hosting)')
 print('This is a simulated hydrotesting system. No official vehicle records are accessed.\n')
-email=input('Admin email (first launch: choose one): ').strip().lower()
-password=getpass.getpass('Admin password (12+ characters): ')
+email=(os.getenv('ADMIN_EMAIL') or input('Admin email (first launch: choose one): ')).strip().lower()
+password=os.getenv('ADMIN_PASSWORD') or getpass.getpass('Admin password (12+ characters): ')
 if len(password)<12 or '@' not in email:
     raise SystemExit('A valid email and a password of at least 12 characters are required.')
 os.environ.setdefault('DATABASE_URL','sqlite:///'+str(ROOT/'storage'/'local-demo.sqlite3'))
