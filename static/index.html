@@ -1,112 +1,647 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SmartFuel | ANPR Commercial Pilot</title><link rel="stylesheet" href="/static/style.css"></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartFuel AI-ANPR | National CNG Safety & Compliance Verification System</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="brand"><div class="brand-icon">S<span>F</span></div><div><strong>SMARTFUEL</strong><small>ANPR INTELLIGENCE</small></div></div>
-    <div class="sidebar-label">WORKSPACE</div>
-    <nav id="nav">
-      <button class="nav-item active" data-page="overview"><span class="symbol">▦</span> Overview</button>
-      <button class="nav-item" data-page="inspect"><span class="symbol">⌗</span> AI Inspection <span class="nav-badge">LIVE</span></button>
-      <button class="nav-item" data-page="alerts"><span class="symbol">⚑</span> Station Alerts</button>
-      <button class="nav-item" data-page="database"><span class="symbol">▤</span> Vehicle Database</button>
-      <button class="nav-item" data-page="analytics"><span class="symbol">▥</span> Analytics</button>
-      <button class="nav-item" data-page="entries"><span class="symbol">⇥</span> Vehicle Entry Logs</button>
-      <button class="nav-item" data-page="history"><span class="symbol">◷</span> Inspection History</button>
-      <button class="nav-item" data-page="admin" id="adminNav" hidden><span class="symbol">♙</span> Administration</button>
-      <button class="nav-item" data-page="health"><span class="symbol">⚙</span> System Health</button>
-    </nav>
-    <div class="sidebar-bottom"><div class="sidebar-demo-dot">● SECURE DEMO PORTAL</div><p>Cloud-ready web software. All vehicle records are fictional demonstration data.</p></div>
-  </aside>
-  <main class="main">
-    <header class="topbar"><div class="top-name"><span class="mobilebrand">SMARTFUEL / </span><span id="topTitle">Overview</span></div><div class="top-right"><span class="mode-badge" id="sessionUser">● Signed in</span><button class="btn outline" id="logoutBtn" style="padding:9px 14px">Sign out</button><span class="user-avatar">SF</span></div></header>
-    <div class="safety-strip"><span class="warn-dot">!</span><b>DEMONSTRATION ONLY</b> — Vehicle/CNG records are simulated. No government verification, real inspection, or official certificate is performed.</div>
-    <div class="content">
-      <section id="overview" class="page active">
-        <div class="heading"><div><div class="eyebrow">CNG INSPECTION INTELLIGENCE</div><h1>Overview <span class="accent">.</span></h1><p>Monitor camera readings, inspection outcomes, and registered demonstration vehicles.</p></div><button class="btn primary" data-open="inspect">⌗ &nbsp; Start New Inspection <span>↗</span></button></div>
-        <div class="stats" id="stats"><div class="stat skeleton">Loading dashboard...</div></div>
-        <div class="two-col wide-left">
-          <div class="panel"><div class="panel-head"><div><h2>Recent inspections</h2><p>Latest plate recognition and database checks</p></div><button class="text-btn" data-open="history">View all →</button></div><div class="table-wrap"><table><thead><tr><th>VEHICLE NUMBER</th><th>INPUT</th><th>RESULT</th><th>TIME (UTC)</th></tr></thead><tbody id="overviewScans"><tr><td colspan="4" class="empty-small">No inspections yet. Try a demo plate image.</td></tr></tbody></table></div></div>
-          <div class="panel flow-panel"><div class="panel-head"><div><h2>How your prototype works</h2><p>All in this single software</p></div></div><div class="flow-step"><div class="flow-num">01</div><div><strong>Capture number plate</strong><span>Upload photo or USB/webcam snapshot</span></div></div><div class="flow-divider"></div><div class="flow-step"><div class="flow-num">02</div><div><strong>AI reads registration</strong><span>OpenCV + Tesseract OCR in the server</span></div></div><div class="flow-divider"></div><div class="flow-step"><div class="flow-num">03</div><div><strong>Match your own records</strong><span>Persistent database: vehicle, CNG, cylinders</span></div></div><div class="flow-divider"></div><div class="flow-step"><div class="flow-num">04</div><div><strong>Show inspection result</strong><span>Status, history, printable sample report</span></div></div></div>
-        </div>
-        <div class="panel sample-banner"><div><div class="eyebrow">QUICK START</div><h2>Try the demo without a real vehicle</h2><p>Open a prepared example plate image from the provided <b>samples</b> folder, or hold a printed sample plate in front of your USB camera. The records are already stored in the local database.</p></div><button class="btn outline" data-open="inspect">Open AI Inspection →</button></div>
-      </section>
-      <section id="inspect" class="page">
-        <div class="heading"><div><div class="eyebrow">CAMERA & OCR ENGINE</div><h1>AI Vehicle Inspection <span class="accent">.</span></h1><p>Capture → recognise number → lookup → result. No government APIs needed.</p></div></div>
-        <div class="panel station-context"><div><strong>Inspection station</strong><p>Every new inspection is linked to one registered CNG station.</p></div><select id="inspectionStation" aria-label="Inspection station"><option value="">Loading stations…</option></select></div>
-        <div class="inspect-grid">
-          <div class="panel capture-panel"><div class="panel-head"><div><h2>Vehicle capture</h2><p>Choose your input source</p></div><span class="pill muted">SERVER OCR</span></div>
-            <div class="tabbar"><button class="input-tab active" data-tab="upload">↑ Upload image</button><button class="input-tab" data-tab="camera">⊡ USB / webcam</button></div>
-            <div id="uploadTab" class="input-area"><label class="dropzone" id="dropZone"><input type="file" accept="image/png,image/jpeg,image/webp" id="imageFile" hidden><div class="drop-symbol">▧</div><strong>Drop a number plate photo here</strong><span>or click to browse JPG / PNG / WEBP</span><small>Maximum 8 MB · Keep the plate sharp and readable</small></label><div class="selected-preview" id="uploadPreviewWrap" hidden><img id="uploadPreview" alt="Selected vehicle number plate photograph"><div><div id="uploadName" class="filename"></div><button id="clearUpload" class="text-btn">Change photo</button></div></div><button id="analyzeUpload" class="btn primary full" disabled>⌗ &nbsp; Analyze Image & Check Database <span>→</span></button>
-              <section class="sample-library" aria-label="Fictional OCR test photos">
-                <div class="sample-library-header"><div><strong>Demo image library</strong><small>Select a fictional image to load it into the OCR input.</small></div><span class="pill muted" id="sampleImageCount">Loading</span></div>
-                <div class="sample-gallery" id="sampleGallery"><span class="tiny">Loading synthetic samples…</span></div>
-                <p class="tiny">All plates are synthetic fixtures matched to your existing 100 demo database records. A picture is not evidence of real compliance.</p>
-              </section>
-              </div>
-            <div id="cameraTab" class="input-area" hidden>
-              <div class="camera-block monitor-screen">
-                <video id="cameraVideo" autoplay muted playsinline aria-label="Live USB webcam monitor"></video>
-                <div class="camera-crosshair" aria-hidden="true"><div>Place number plate within this area</div></div>
-                <div class="camera-top"><span id="cameraLiveBadge" class="live-badge">● CAMERA OFFLINE</span><span id="cameraClock">—</span></div>
-                <div id="cameraPlaceholder" class="camera-placeholder">◉<br><span>Camera is not started</span><small>Connect a USB camera or use your laptop webcam</small></div>
-              </div>
-              <div class="monitor-status" aria-live="polite"><span id="autoStatus">Camera is offline</span><strong id="detectedPlate">Waiting for camera</strong></div>
-              <label class="control-label" for="cameraSelect">SELECT VIDEO DEVICE</label><select id="cameraSelect"><option value="">Default webcam</option></select>
-              <label class="auto-toggle" for="autoScanToggle"><input type="checkbox" id="autoScanToggle" checked><span><strong>Automatic ANPR + entry logging</strong><small>Detect repeated matching OCR reads, save the entry time and open its full report</small></span></label>
-              <div class="row-buttons"><button id="startCamera" class="btn secondary">▶ Start live camera</button><button id="stopCamera" class="btn outline">■ Stop camera</button></div>
-              <button id="captureCamera" class="btn primary full" disabled>Capture & Analyze Manually →</button>
-              <p class="tiny">Live monitor works only with your browser's camera permission and HTTPS (or localhost). Camera scanning stops when you leave this page. Uncertain OCR is saved for review rather than reported as verified.</p>
-              <div class="recent-entries"><div class="panel-head"><div><h2>Automatically detected entries</h2><p>Latest arrivals in this browser session</p></div></div><div id="autoEntryFeed" class="auto-entry-feed"><div class="empty-small">Start the camera and show a readable demo plate.</div></div></div>
-            </div>
-            <div class="scan-loading" id="scanLoading" hidden><div class="spinner"></div><strong>Recognizing vehicle number…</strong><small>Analyzing image with the protected server OCR engine and database</small></div>
-            <div class="error-area" id="scanError" hidden></div>
-          </div>
-          <div class="panel results-panel" id="resultsPanelHighlight"><div class="panel-head"><div><h2>Inspection result</h2><p>Recognition and certificate status</p></div><span class="pill muted" id="resultId">AWAITING SCAN</span></div>
-            <div id="resultEmpty" class="result-empty"><div class="result-empty-icon">⌗</div><strong>Ready to inspect a vehicle</strong><p>Upload an image or capture a live camera frame to display results here.</p></div>
-            <div id="resultDisplay" hidden>
-              <div class="plate-label">RECOGNISED REGISTRATION</div><div class="plate-row"><div class="plate-number" id="recognizedPlate">—</div><span id="ocrConfidence" class="conf"></span></div>
-              <div class="ocr-edit"><label for="correctionPlate">OCR READ INCORRECTLY? CORRECT IT</label><div><input id="correctionPlate" placeholder="Enter registration number" maxlength="14"><button class="btn secondary" id="correctLookup">Check number</button></div></div>
-              <div id="resultStatus" class="status-hero"></div>
-              <div class="info-list"><div><span>Vehicle / model</span><b id="rModel">—</b></div><div><span>CNG endorsed on RC (sample)</span><b id="rCNG">—</b></div><div><span>Cylinders in local records</span><b id="rCount">—</b></div><div><span>Information source</span><b>Local demo database</b></div></div>
-              <div id="cngDecisionSummary" class="cng-decision-summary" hidden></div><h3 class="subheading">Cylinder-wise hydrotesting details</h3><div id="cylinderResult" class="cylinder-result"></div>
-              <div class="result-actions"><a target="_blank" rel="noopener" class="btn primary" href="#" id="printReport">↗ View / print report</a><button id="showVehicleRecord" class="btn outline">Open database record</button><a class="btn secondary" href="/cng-display" target="_blank" rel="noopener">CNG Station Display ↗</a></div>
-              <p class="tiny disclaimer">Sample validity is calculated from stored dates only. It is not a physical or official inspection.</p>
-            </div>
-          </div>
-        </div>
-        <div class="panel manual-panel"><div><h2>Need to test without a photo?</h2><p>Enter one of the fictional plate numbers from the registry to verify database lookup and dashboard logic.</p></div><div class="manual-row"><input id="manualPlate" maxlength="14" placeholder="e.g. WB00DE0001"><button class="btn secondary" id="manualLookup">Check Demo Record →</button></div></div>
-      </section>
-      <section id="alerts" class="page"><div class="heading"><div><div class="eyebrow">STATION CONTROL DISPLAY</div><h1>Hydrotesting Alerts <span class="accent">.</span></h1><p>Latest demo vehicles with expired, missing or unverified hydrotest records. Automatically updates every 15 seconds while open.</p></div><button class="btn outline" id="refreshAlerts">↻ Refresh Alerts</button><a class="btn primary" href="/cng-display" target="_blank" rel="noopener">Open CNG Decision Display ↗</a><a class="btn secondary" target="_blank" rel="noopener" href="/alerts/wall">Open Alert Wall ↗</a></div><div class="safety-strip"><b>DEMO ONLY:</b> These alerts are based on your own fictional dataset — not authoritative inspection results.</div><div class="stats" id="alertStats"></div><div id="alertCards" class="two-col" style="margin-top:18px"><div class="panel">Waiting for inspection alerts...</div></div></section>
-      <section id="database" class="page"><div class="heading"><div><div class="eyebrow">PROTECTED DEMO RECORDS</div><h1>Vehicle Database <span class="accent">.</span></h1><p>Add and edit demonstration vehicles, cylinder records, test dates and sample certificate references.</p></div><button class="btn primary" id="addVehicle">+ Add Vehicle</button></div>
-        <div class="panel"><div class="list-toolbar"><div class="searchbox">⌕ <input id="vehicleSearch" placeholder="Search registration or model..." autocomplete="off"></div><span class="subtle" id="vehicleCount">— vehicles</span></div><div class="table-wrap"><table><thead><tr><th>REGISTRATION</th><th>MODEL / VEHICLE</th><th>CNG ON RC</th><th>CYLINDERS</th><th>DEMO RESULT</th><th>ACTIONS</th></tr></thead><tbody id="vehicleRows"></tbody></table></div></div>
-      </section>
 
-      <section id="analytics" class="page">
-        <div class="heading"><div><div class="eyebrow">OPERATIONAL INTELLIGENCE</div><h1>Inspection Analytics <span class="accent">.</span></h1><p>Inspection results, trends and exceptions based on locally stored demonstration records.</p></div><div class="analytics-filters"><select id="analyticsDays"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last year</option></select><select id="analyticsStation"><option value="">All stations</option></select><button class="btn outline" id="refreshAnalytics">Refresh</button></div></div>
-        <div class="stats" id="analyticsStats"></div>
-        <div class="two-col"><div class="panel"><div class="panel-head"><div><h2>Daily inspection activity</h2><p>Number of recorded inspections each day</p></div></div><div id="analyticsChart" class="analytics-chart"><div class="empty-small">Loading chart...</div></div></div>
-        <div class="panel"><div class="panel-head"><div><h2>Outcome breakdown</h2><p>Demonstration status counts</p></div></div><div id="analyticsBreakdown"></div></div></div>
-      </section>
-      <section id="entries" class="page"><div class="heading"><div><div class="eyebrow">STATION VEHICLE MOVEMENT</div><h1>Vehicle Entry Logs <span class="accent">.</span></h1><p>Server-recorded timestamps, station, detected number, OCR confidence and inspection outcome. Uploads/manual lookups are labelled inspections, not physical arrivals.</p></div><button class="btn secondary" id="exportEntries">↓ Export CSV</button></div>
-        <div class="stats" id="entrySummary"></div><div class="panel"><div class="entry-toolbar"><input id="entrySearch" placeholder="Search vehicle registration" aria-label="Search vehicle registration"><select id="entryStation" aria-label="Filter by station"><option value="">All stations</option></select><button id="refreshEntries" class="btn outline">Refresh logs</button></div><div class="entry-count" id="entryCount">Loading records…</div><div class="table-wrap"><table><thead><tr><th>EVENT</th><th>ENTRY / CHECK TIME</th><th>NUMBER PLATE</th><th>STATION</th><th>TYPE</th><th>RESULT</th><th>OCR</th><th>DETAILS</th></tr></thead><tbody id="entryRows"></tbody></table></div></div>
-        <div class="panel" id="entryDetailPanel" hidden style="margin-top:18px"><div class="panel-head"><div><h2>Selected vehicle event</h2><p>Original scan and saved demonstration result</p></div><button id="closeEntryDetail" class="btn outline">Close</button></div><div id="entryDetailContent"></div></div>
-      </section>
-      <section id="history" class="page"><div class="heading"><div><div class="eyebrow">INSPECTION LOG</div><h1>Inspection History <span class="accent">.</span></h1><p>Review scanned plates, confidence, database results and generated reports.</p></div><a href="/api/scans.csv" class="btn secondary">↓ Export CSV</a></div><div class="panel"><div class="table-wrap"><table><thead><tr><th>SCAN ID</th><th>TIME (UTC)</th><th>RECOGNISED</th><th>CHECKED</th><th>METHOD</th><th>CONFIDENCE</th><th>DEMO STATUS</th><th>REPORT</th></tr></thead><tbody id="historyRows"></tbody></table></div></div></section>
-
-      <section id="admin" class="page"><div class="heading"><div><div class="eyebrow">CONTROL CENTER</div><h1>Administration <span class="accent">.</span></h1><p>Manage stations, operator accounts and the system audit trail.</p></div></div>
-      <div class="two-col"><div class="panel"><h2>Registered Stations</h2><div id="stationList" class="health-note">Loading...</div><form id="stationForm" style="display:grid;gap:12px;margin-top:18px"><label>Station Name<input id="stationName" required placeholder="Demo Station 2" maxlength="140"></label><label>City<input id="stationCity" placeholder="Durgapur" maxlength="140"></label><button class="btn primary" type="submit">+ Add Station</button></form></div>
-      <div class="panel"><h2>Operator Access</h2><div id="userList" class="health-note">Loading...</div><form id="userForm" style="display:grid;gap:11px;margin-top:15px"><label>Name<input id="newName" placeholder="Inspector Name" maxlength="100"></label><label>Work Email<input id="newEmail" type="email" required placeholder="inspector@example.com"></label><label>Secure Password (12+ chars)<input id="newPassword" type="password" required minlength="12"></label><label>Permission<select id="newRole"><option value="operator">Station Operator (scan)</option><option value="viewer">Viewer (read only)</option><option value="admin">Super Admin</option></select></label><label>Assigned Station<select id="newStation"><option value="">All stations</option></select></label><button class="btn primary" type="submit">Create User</button></form></div></div>
-      <div class="panel" style="margin-top:20px"><div class="panel-head"><div><h2>Station camera devices</h2><p>Register a station edge agent; the token is shown once. Never paste it into public messages.</p></div></div>
-        <form id="cameraForm" class="camera-form"><input id="deviceName" placeholder="Device name (e.g. Entrance Camera 1)" maxlength="140" required><select id="deviceStation" required><option value="">Select station</option></select><button class="btn primary" type="submit">Register camera</button></form><div id="deviceTokenDisplay" class="token-display" hidden></div><div id="cameraList" class="health-note">Loading cameras…</div></div>
-      <div class="panel" style="margin-top:20px"><h2>Audit log</h2><div class="table-wrap"><table><thead><tr><th>TIME (UTC)</th><th>EVENT</th><th>SUBJECT</th><th>ACTOR ID</th></tr></thead><tbody id="auditRows"></tbody></table></div></div>
-      </section>
-      <section id="health" class="page"><div class="heading"><div><div class="eyebrow">RUNTIME STATUS</div><h1>System Health <span class="accent">.</span></h1><p>Review OCR, database connectivity, and development mode.</p></div></div><div class="two-col"><div class="panel" id="healthItems"><h2>Checking system...</h2></div><div class="panel"><h2>Commercial pilot boundaries</h2><div class="health-note"><b>✓ Cloud-hosted or local test</b><p>Image upload, USB camera capture via browser, OCR and protected database lookup.</p></div><div class="health-note"><b>✓ Persistent, role-controlled records</b><p>PostgreSQL on Hostinger VPS; SQLite is reserved for developer tests.</p></div><div class="health-note"><b>⚠ DEMO records, not government verification</b><p>No real RC, cylinder or hydrotest certification is performed.</p></div><div class="health-note"><b>⚠ Formal rollout needs separate validation</b><p>Security review, station camera installation, official record integrations and 24×7 operations remain separate.</p></div></div></div><div class="panel" style="margin-top:20px"><h2>Change Your Password</h2><form id="passwordForm" style="display:flex;gap:10px;flex-wrap:wrap"><input required type="password" id="oldPassword" autocomplete="current-password" placeholder="Current password"><input required type="password" id="newPasswordSecure" minlength="12" autocomplete="new-password" placeholder="New strong password (12+)"><button type="submit" class="btn secondary">Update Password</button></form></div></section>
+  <!-- 1. Government Top Accessibility & Language Toolbar -->
+  <header class="gov-topbar">
+    <div class="gov-flag-wrap">
+      <div class="gov-flag" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <span id="txtGovIndia">भारत सरकार | Government of India</span>
     </div>
-    <footer class="footer"><span>SmartFuel ANPR Commercial Pilot v8.0</span><span>LOCAL DEMO DATA • NOT GOVERNMENT VERIFIED</span></footer>
+    <div class="gov-access-tools">
+      <span>आकार / Text Size:</span>
+      <button type="button" class="gov-tool-btn" id="btnFontSmall" title="Decrease font size">A-</button>
+      <button type="button" class="gov-tool-btn" id="btnFontReset" title="Normal font size">A</button>
+      <button type="button" class="gov-tool-btn" id="btnFontLarge" title="Increase font size">A+</button>
+      <button type="button" class="gov-tool-btn" id="btnContrastToggle" title="Toggle High Contrast Mode">🌓 <span id="txtContrast">उच्च कंट्रास्ट / High Contrast</span></button>
+      <button type="button" class="gov-tool-btn" id="btnLangToggle" title="Switch Language">🌐 <span id="txtLang">English / हिन्दी</span></button>
+    </div>
+  </header>
+
+  <!-- 2. National Ministry Masthead -->
+  <div class="gov-masthead">
+    <div class="gov-emblem-section">
+      <div class="gov-emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" width="44" height="44" fill="currentColor">
+          <circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="4"/>
+          <path d="M50 15 L53 30 L65 30 L55 40 L60 55 L50 45 L40 55 L45 40 L35 30 L47 30 Z" fill="currentColor"/>
+          <rect x="30" y="62" width="40" height="6" rx="2" fill="currentColor"/>
+          <rect x="25" y="72" width="50" height="8" rx="2" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="gov-titles">
+        <h2 id="txtMinistry">पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय | PESO</h2>
+        <h1 id="txtPortalTitle">SmartFuel AI-ANPR</h1>
+        <p id="txtPortalSub">Automatic Number Plate Recognition | CNG Compliance Verification | Vehicle Entry Management</p>
+      </div>
+    </div>
+    <div class="gov-badges-section">
+      <div class="gov-statute-tag" id="txtStatute">Complete Software - Ready for Deployment | With Dummy Data or Government API</div>
+      <div class="gov-user-chip">
+        <span class="gov-user-avatar" id="userInitial">SF</span>
+        <span id="sessionUser">● Signed in as Admin</span>
+        <button type="button" class="btn outline" id="logoutBtn" style="padding:4px 10px;font-size:0.75rem;">Sign out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Primary Government Navigation Bar -->
+  <nav class="gov-navbar" id="nav">
+    <button class="gov-nav-btn active" data-page="inspect"><span>📷</span> <span id="navInspect">AI Inspection</span></button>
+    <button class="gov-nav-btn" data-page="overview"><span>▦</span> <span id="navOverview">Overview</span></button>
+    <button class="gov-nav-btn" data-page="entries"><span>⇥</span> <span id="navEntries">Vehicle Entry Logs</span></button>
+    <button class="gov-nav-btn" data-page="database"><span>▤</span> <span id="navDatabase">Vehicle Database</span></button>
+    <button class="gov-nav-btn" data-page="alerts"><span>⚑</span> <span id="navAlerts">Station Alerts</span></button>
+    <button class="gov-nav-btn" data-page="analytics"><span>▥</span> <span id="navAnalytics">Analytics</span></button>
+    <button class="gov-nav-btn" data-page="history"><span>◷</span> <span id="navHistory">Inspection History</span></button>
+    <button class="gov-nav-btn" data-page="admin" id="adminNav" hidden><span>♙</span> <span id="navAdmin">Administration</span></button>
+    <button class="gov-nav-btn" data-page="health"><span>⚙</span> <span id="navHealth">System Health</span></button>
+  </nav>
+
+  <!-- 4. Statutory Disclaimer Banner -->
+  <div class="gov-statutory-strip">
+    <strong>STATUTORY SAFETY COMPLIANCE:</strong>
+    <span id="txtSafetyNotice">Under Rule 35, Gas Cylinders Rules 2016 & CMVR 1989. CNG dispensing is strictly prohibited for unendorsed RCs or expired hydrotesting certificates.</span>
+  </div>
+
+  <!-- 5. Main Application Content Container -->
+  <main class="gov-content">
+
+    <!-- ====================================================================
+         PAGE: AI INSPECTION (THE COMPLETE 5-STEP WORKFLOW FROM idea.jpeg)
+         ==================================================================== -->
+    <section id="inspect" class="page active">
+      <div class="section-head">
+        <div>
+          <h2 id="txtInspectHead">AI Vehicle Inspection & CNG Safety Verification</h2>
+          <p id="txtInspectSub">Live Camera Auto-Detection • Optical Plate Extraction • Dual VAHAN RC & PESO Hydrotest Rules • Immediate Dispenser Interlock</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <a href="/cng-display" target="_blank" rel="noopener" class="btn success">📺 <span id="txtOpenKiosk">Open CNG Station Display ↗</span></a>
+          <a href="/alerts/wall" target="_blank" rel="noopener" class="btn danger">🚨 <span id="txtOpenWall">Alert Wall ↗</span></a>
+        </div>
+      </div>
+
+      <!-- Monitoring Station Context Strip -->
+      <div class="station-banner">
+        <div>
+          <label for="inspectionStation" id="txtSelectStation">Monitoring CNG Station:</label>
+          <select id="inspectionStation" aria-label="Inspection station">
+            <option value="">Loading stations…</option>
+          </select>
+        </div>
+        <div style="font-weight:700;color:var(--gov-navy-primary);" id="txtStationMode">Mode: Demonstrator (100 Synthetic Vehicles)</div>
+      </div>
+
+      <!-- The 5-Step Pipeline Grid (Matching idea.jpeg) -->
+      <div class="pipeline-grid">
+
+        <!-- STEP 1: LIVE CAMERA AUTO-DETECTION (USB WEBCAM) -->
+        <div class="step-card">
+          <div class="step-header">
+            <div class="step-title">
+              <span class="step-num">1</span>
+              <span id="txtStep1Title">Live Camera - Auto Detection (USB Webcam)</span>
+            </div>
+            <span class="step-status-chip chip-muted" id="cameraStatusBadge">OFFLINE</span>
+          </div>
+
+          <div class="camera-viewfinder">
+            <video id="cameraVideo" autoplay muted playsinline aria-label="Live USB webcam feed"></video>
+            <div class="camera-overlay-box" id="camBox">
+              <div class="camera-overlay-tag" id="camBoxTag">Plate Detection Zone</div>
+            </div>
+            <div class="camera-telemetry">
+              <span class="rec-dot" id="recBadge">● REC</span>
+              <span id="fpsCounter">FPS: 12</span>
+              <span id="cameraClock">--:--:--</span>
+            </div>
+            <div id="cameraPlaceholder" class="camera-placeholder">
+              <p>📷<br><strong id="txtCamOff">Camera is stopped</strong><br><small id="txtCamHint">Connect an authorized USB camera or webcam</small></p>
+            </div>
+          </div>
+
+          <div class="cam-controls">
+            <div class="cam-select-row">
+              <label for="cameraSelect" style="font-size:0.78rem;font-weight:800;color:var(--gov-navy-dark);" id="txtSelectCamLabel">Select Camera:</label>
+              <select id="cameraSelect">
+                <option value="">Default Webcam</option>
+              </select>
+            </div>
+
+            <div class="toggle-group">
+              <label class="toggle-label">
+                <input type="checkbox" id="autoScanToggle" checked>
+                <span id="txtToggleAuto">Auto Detection</span>
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="saveFramesToggle">
+                <span id="txtToggleSave">Save Frames</span>
+              </label>
+              <label class="toggle-label">
+                <input type="checkbox" id="beepDetectionToggle" checked>
+                <span id="txtToggleBeep">Beep on Read</span>
+              </label>
+            </div>
+
+            <div class="cam-actions">
+              <button type="button" class="btn success full" id="startCamera">▶ <span id="txtStartCam">Start Camera</span></button>
+              <button type="button" class="btn outline full" id="stopCamera">■ <span id="txtStopCam">Stop Camera</span></button>
+            </div>
+            <button type="button" class="btn primary full" id="captureCamera" disabled>📸 <span id="txtCaptureManual">Capture & Analyze Now</span></button>
+          </div>
+        </div>
+
+        <!-- STEP 2: IMAGE UPLOAD OPTION -->
+        <div class="step-card">
+          <div class="step-header">
+            <div class="step-title">
+              <span class="step-num">2</span>
+              <span id="txtStep2Title">Image Upload Option</span>
+            </div>
+            <span class="step-status-chip chip-muted" id="uploadStatusBadge">READY</span>
+          </div>
+
+          <label class="dropzone-box" id="dropZone">
+            <input type="file" accept="image/png,image/jpeg,image/webp" id="imageFile" hidden>
+            <div class="drop-icon">☁</div>
+            <strong id="txtDropStrong">Drag & drop vehicle image here</strong>
+            <span id="txtDropSpan">or click to upload photo</span>
+            <small id="txtDropSmall">JPG, PNG, WEBP (Max 8 MB) • Keep registration plate sharp</small>
+          </label>
+
+          <div class="upload-preview-wrap" id="uploadPreviewWrap" hidden>
+            <img id="uploadPreview" class="upload-thumb" alt="Uploaded vehicle photo preview">
+            <div class="upload-info">
+              <strong id="uploadName">image.jpg</strong>
+              <small id="txtPhotoLoaded">Vehicle photo loaded into buffer</small>
+            </div>
+            <button type="button" class="btn outline" id="clearUpload" style="padding:4px 8px;font-size:0.75rem;">✕ Remove</button>
+          </div>
+
+          <div style="margin-top:auto;padding-top:14px;">
+            <button type="button" class="btn primary full" id="analyzeUpload" disabled>🔍 <span id="txtAnalyzeBtn">Analyze Image & Verify Database</span></button>
+          </div>
+        </div>
+
+        <!-- STEP 3: AI NUMBER PLATE RECOGNITION -->
+        <div class="step-card">
+          <div class="step-header">
+            <div class="step-title">
+              <span class="step-num">3</span>
+              <span id="txtStep3Title">AI Number Plate Recognition</span>
+            </div>
+            <span class="step-status-chip chip-green" id="step3StatusChip">✔ OCR ACTIVE</span>
+          </div>
+
+          <div class="plate-crop-preview" id="plateCropWrap">
+            <img id="plateCropImg" src="/static/login.html" style="display:none;" alt="Cropped number plate">
+            <div style="color:#64748b;font-size:0.78rem;" id="plateCropEmpty">Cropped license plate view will display here</div>
+          </div>
+
+          <div style="text-align:center;">
+            <div class="hsrp-plate-badge">
+              <div class="hsrp-ind">
+                <span>IND</span>
+                <span class="hsrp-chakra">☸</span>
+              </div>
+              <div class="hsrp-number" id="recognizedPlate">— — — —</div>
+            </div>
+          </div>
+
+          <div class="conf-meter-wrap">
+            <span id="txtConfLabel">Detection Confidence:</span>
+            <div class="conf-bar">
+              <div class="conf-fill" id="confFill"></div>
+            </div>
+            <span class="conf-score" id="ocrConfidence">0%</span>
+          </div>
+
+          <div style="margin-top:auto;border-top:1px solid var(--gov-border-subtle);padding-top:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <small style="font-weight:700;color:var(--gov-text-muted);" id="txtManualCorrectLabel">OCR misread? Correct manually:</small>
+              <button type="button" class="btn outline" id="btnToggleManualEdit" style="padding:3px 8px;font-size:0.72rem;">✏ <span id="txtEditManually">Edit Manually</span></button>
+            </div>
+            <div class="manual-edit-row" id="manualEditRow" hidden>
+              <input type="text" id="correctionPlate" placeholder="e.g. DL01AB1234" maxlength="14">
+              <button type="button" class="btn primary" id="correctLookup">Verify Plate</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: DATABASE VERIFICATION & COMPLIANCE CHECK -->
+        <div class="step-card">
+          <div class="step-header">
+            <div class="step-title">
+              <span class="step-num">4</span>
+              <span id="txtStep4Title">Database Verification & Compliance Check</span>
+            </div>
+            <span class="step-status-chip chip-muted" id="step4StatusChip">AWAITING SCAN</span>
+          </div>
+
+          <!-- Vehicle Details Sub-Card -->
+          <div class="vehicle-meta-grid">
+            <div class="meta-field">
+              <span id="txtMetaVehNo">Vehicle Number</span>
+              <strong id="metaPlate">—</strong>
+            </div>
+            <div class="meta-field">
+              <span id="txtMetaOwner">Owner Name</span>
+              <strong id="metaOwner">Rohit Sharma</strong>
+            </div>
+            <div class="meta-field">
+              <span id="txtMetaType">Vehicle Type</span>
+              <strong id="metaModel">Car (Petrol + CNG)</strong>
+            </div>
+            <div class="meta-field">
+              <span id="txtMetaRC">RC CNG Endorsement</span>
+              <strong id="metaRC">—</strong>
+            </div>
+            <div class="meta-field">
+              <span id="txtMetaCylCount">No. of Cylinders</span>
+              <strong id="metaCylCount">—</strong>
+            </div>
+            <div class="meta-field">
+              <span id="txtMetaRegDate">Registration Date</span>
+              <strong id="metaRegDate">15-03-2019</strong>
+            </div>
+          </div>
+
+          <!-- CNG Cylinder Test Details Table -->
+          <div style="font-weight:800;font-size:0.8rem;color:var(--gov-navy-dark);margin-bottom:6px;" id="txtCylTableTitle">CNG Cylinder Test Details:</div>
+          <div class="cylinder-table-wrap">
+            <table class="cylinder-table">
+              <thead>
+                <tr>
+                  <th id="thCylNo">Cyl No.</th>
+                  <th id="thLastTest">Last Test Date</th>
+                  <th id="thExpiry">Expiry Date</th>
+                  <th id="thCylStatus">Status</th>
+                </tr>
+              </thead>
+              <tbody id="cylinderTableBody">
+                <tr>
+                  <td colspan="4" style="text-align:center;color:#94a3b8;padding:12px;" id="txtNoCylData">No vehicle scanned yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- STEP 5: FINAL RESULT HERO DECISION CARD -->
+      <div class="step-card" style="margin-bottom:24px;">
+        <div class="step-header">
+          <div class="step-title">
+            <span class="step-num">5</span>
+            <span id="txtStep5Title">Final Result</span>
+          </div>
+          <span class="step-status-chip chip-muted" id="step5DecisionChip">READY</span>
+        </div>
+
+        <div class="decision-hero-card" id="finalDecisionCard">
+          <div class="decision-icon" id="decisionIcon">⌗</div>
+          <h3 class="decision-headline" id="decisionHeadline">Awaiting Vehicle Ingress</h3>
+          <div class="decision-reasons-list" id="decisionReasonsWrap" hidden>
+            <strong id="txtReasonsTitle">Statutory Grounds / Reasons:</strong>
+            <ul id="decisionReasonsList"></ul>
+          </div>
+          <div class="decision-meta">
+            <span id="txtInspectionTimeLabel">Inspection Time:</span> <strong id="decisionTimestamp">—</strong> &nbsp;|&nbsp; 
+            <span id="txtStationLabel">Station:</span> <strong id="decisionStationName">Demo IGL CNG Station</strong>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <a href="#" target="_blank" rel="noopener" class="btn primary" id="printReport" style="display:none;">📄 <span id="txtViewReportBtn">View / Print Full Report</span></a>
+            <button type="button" class="btn outline" id="btnQuickKiosk">📺 <span id="txtViewKioskBtn">Show on Station Display</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOWER SECTIONS (GALLERY, RECENT LOGS, FLOW, METRICS) -->
+      <div class="lower-sections-grid">
+
+        <!-- Sample Vehicle Images with Number Plates Gallery -->
+        <div class="gallery-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gov-border-subtle);padding-bottom:8px;">
+            <div>
+              <strong style="font-size:0.95rem;color:var(--gov-navy-dark);" id="txtGalleryTitle">Sample Vehicle Images with Number Plates</strong>
+              <small style="display:block;color:var(--gov-text-muted);" id="txtGallerySub">Click any sample vehicle to load into the AI verification pipeline</small>
+            </div>
+            <span class="step-status-chip chip-muted" id="sampleCountBadge">59 Samples</span>
+          </div>
+          <div class="sample-tiles-grid" id="sampleTilesGrid">
+            <!-- Dynamic sample tiles will populate here -->
+          </div>
+        </div>
+
+        <!-- Sidebar: Process Flow & Additional Data Badges -->
+        <div class="info-sidebar-wrap">
+          <div class="step-card">
+            <strong style="font-size:0.9rem;color:var(--gov-navy-dark);margin-bottom:12px;" id="txtProcessFlowTitle">Process Flow</strong>
+            <div class="flow-step-row"><span class="flow-step-num">1</span> <span id="flStep1">Car Enters Station (Camera capture)</span></div>
+            <div class="flow-step-row"><span class="flow-step-num">2</span> <span id="flStep2">Image to Text (Offline ANPR OCR)</span></div>
+            <div class="flow-step-row"><span class="flow-step-num">3</span> <span id="flStep3">Database Verification (RC & Hydrotest)</span></div>
+            <div class="flow-step-row"><span class="flow-step-num">4</span> <span id="flStep4">Generate Result (YES / HOLD with reasons)</span></div>
+            <div class="flow-step-row"><span class="flow-step-num">5</span> <span id="flStep5">Store Log (Traceable event ledger)</span></div>
+            <div class="flow-step-row"><span class="flow-step-num">6</span> <span id="flStep6">Show on Station Display (Island screen)</span></div>
+          </div>
+
+          <div class="step-card">
+            <strong style="font-size:0.9rem;color:var(--gov-navy-dark);" id="txtAdditionalDataTitle">Additional Data Metrics</strong>
+            <div class="metrics-badges-grid">
+              <div class="metric-box">
+                <span id="txtMetricVeh">Sample Vehicles</span>
+                <strong id="metricVehCount">100+</strong>
+              </div>
+              <div class="metric-box">
+                <span id="txtMetricCyl">Cylinder Records</span>
+                <strong id="metricCylCount">180+</strong>
+              </div>
+              <div class="metric-box">
+                <span id="txtMetricImg">Sample Images</span>
+                <strong id="metricImgCount">59+</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ====================================================================
+         PAGE: OVERVIEW (DASHBOARD SUMMARY)
+         ==================================================================== -->
+    <section id="overview" class="page">
+      <div class="section-head">
+        <div>
+          <h2>System Overview & Summary</h2>
+          <p>Real-time telemetry, vehicle counts, and compliance ratios across registered CNG stations.</p>
+        </div>
+      </div>
+      <div class="metrics-badges-grid" id="stats" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;"></div>
+      <div class="gov-table-wrap">
+        <table class="gov-table">
+          <thead>
+            <tr>
+              <th>REGISTRATION NUMBER</th>
+              <th>INPUT METHOD</th>
+              <th>STATUS</th>
+              <th>INSPECTION TIME</th>
+            </tr>
+          </thead>
+          <tbody id="overviewScans"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         PAGE: VEHICLE ENTRY LOGS
+         ==================================================================== -->
+    <section id="entries" class="page">
+      <div class="section-head">
+        <div>
+          <h2>Vehicle Entry Logs (Movement Ledger)</h2>
+          <p>Time-stamped automated camera detections, station ingress history, and compliance outcomes.</p>
+        </div>
+        <button type="button" class="btn primary" id="exportEntries">↓ Export CSV</button>
+      </div>
+      <div class="station-banner">
+        <input type="text" id="entrySearch" placeholder="Search registration plate..." style="padding:6px 10px;border:1px solid var(--gov-border);border-radius:4px;width:260px;">
+        <select id="entryStation">
+          <option value="">All Stations</option>
+        </select>
+        <button type="button" class="btn outline" id="refreshEntries">↻ Refresh Logs</button>
+      </div>
+      <div class="gov-table-wrap">
+        <table class="gov-table">
+          <thead>
+            <tr>
+              <th>EVENT ID</th>
+              <th>ENTRY TIME</th>
+              <th>NUMBER PLATE</th>
+              <th>STATION</th>
+              <th>METHOD</th>
+              <th>COMPLIANCE STATUS</th>
+              <th>OCR CONFIDENCE</th>
+              <th>REPORT</th>
+            </tr>
+          </thead>
+          <tbody id="entryRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         PAGE: VEHICLE DATABASE (REGISTRY MANAGEMENT)
+         ==================================================================== -->
+    <section id="database" class="page">
+      <div class="section-head">
+        <div>
+          <h2>Vehicle & Cylinder Database</h2>
+          <p>Search, manage, and inspect registered CNG vehicles, cylinder serials, and test certificates.</p>
+        </div>
+        <button type="button" class="btn primary" id="addVehicle">+ Add Vehicle Record</button>
+      </div>
+      <div class="station-banner">
+        <input type="text" id="vehicleSearch" placeholder="Search registration plate or model..." style="padding:6px 10px;border:1px solid var(--gov-border);border-radius:4px;width:280px;">
+        <span id="vehicleCount">Loading records...</span>
+      </div>
+      <div class="gov-table-wrap">
+        <table class="gov-table">
+          <thead>
+            <tr>
+              <th>REGISTRATION</th>
+              <th>MODEL / VEHICLE</th>
+              <th>RC CNG ENDORSEMENT</th>
+              <th>CYLINDERS</th>
+              <th>COMPLIANCE STATUS</th>
+              <th>ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="vehicleRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         PAGE: STATION ALERTS
+         ==================================================================== -->
+    <section id="alerts" class="page">
+      <div class="section-head">
+        <div>
+          <h2>Station Safety Alerts</h2>
+          <p>Live feed of vehicles with expired hydrotesting, missing certificates, or un-endorsed fuel retrofits.</p>
+        </div>
+        <button type="button" class="btn outline" id="refreshAlerts">↻ Refresh</button>
+      </div>
+      <div class="metrics-badges-grid" id="alertStats" style="margin-bottom:20px;"></div>
+      <div id="alertCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;"></div>
+    </section>
+
+    <!-- ====================================================================
+         PAGE: ANALYTICS
+         ==================================================================== -->
+    <section id="analytics" class="page">
+      <div class="section-head">
+        <div>
+          <h2>Inspection Analytics & Trends</h2>
+          <p>Compliance ratios, daily inspection throughput, and failure reason breakdowns.</p>
+        </div>
+      </div>
+      <div class="metrics-badges-grid" id="analyticsStats" style="margin-bottom:20px;"></div>
+      <div class="step-card" id="analyticsBreakdown"></div>
+    </section>
+
+    <!-- ====================================================================
+         PAGE: INSPECTION HISTORY
+         ==================================================================== -->
+    <section id="history" class="page">
+      <div class="section-head">
+        <div>
+          <h2>Inspection History Log</h2>
+          <p>Complete historical archive of all manual and automated inspections.</p>
+        </div>
+        <a href="/api/scans.csv" class="btn primary">↓ Export CSV</a>
+      </div>
+      <div class="gov-table-wrap">
+        <table class="gov-table">
+          <thead>
+            <tr>
+              <th>SCAN ID</th>
+              <th>TIMESTAMP</th>
+              <th>RECOGNIZED PLATE</th>
+              <th>VERIFIED PLATE</th>
+              <th>METHOD</th>
+              <th>CONFIDENCE</th>
+              <th>STATUS</th>
+              <th>REPORT</th>
+            </tr>
+          </thead>
+          <tbody id="historyRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         PAGE: ADMINISTRATION
+         ==================================================================== -->
+    <section id="admin" class="page">
+      <div class="section-head">
+        <div>
+          <h2>System Administration</h2>
+          <p>Manage licensed CNG stations, authorized operators, and station camera devices.</p>
+        </div>
+      </div>
+      <div class="pipeline-grid">
+        <div class="step-card">
+          <strong style="font-size:0.95rem;color:var(--gov-navy-dark);margin-bottom:12px;">Registered CNG Stations</strong>
+          <div id="stationList" style="font-size:0.82rem;margin-bottom:16px;">Loading...</div>
+          <form id="stationForm" style="display:grid;gap:8px;">
+            <label style="font-size:0.75rem;font-weight:700;">Station Name: <input id="stationName" required placeholder="IGL Station 02" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></label>
+            <label style="font-size:0.75rem;font-weight:700;">City: <input id="stationCity" placeholder="Dwarka, New Delhi" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></label>
+            <button type="submit" class="btn primary">+ Add Station</button>
+          </form>
+        </div>
+        <div class="step-card">
+          <strong style="font-size:0.95rem;color:var(--gov-navy-dark);margin-bottom:12px;">Operator Accounts & Roles</strong>
+          <div id="userList" style="font-size:0.82rem;margin-bottom:16px;">Loading...</div>
+          <form id="userForm" style="display:grid;gap:8px;">
+            <label style="font-size:0.75rem;font-weight:700;">Full Name: <input id="newName" placeholder="Operator Name" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></label>
+            <label style="font-size:0.75rem;font-weight:700;">Email: <input id="newEmail" type="email" required placeholder="operator@igl.in" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></label>
+            <label style="font-size:0.75rem;font-weight:700;">Password (12+ chars): <input id="newPassword" type="password" required minlength="12" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></label>
+            <label style="font-size:0.75rem;font-weight:700;">Role: 
+              <select id="newRole" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;">
+                <option value="operator">Station Operator (Scan)</option>
+                <option value="viewer">Viewer (Read Only)</option>
+                <option value="admin">Super Admin</option>
+              </select>
+            </label>
+            <button type="submit" class="btn primary">Create User</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         PAGE: SYSTEM HEALTH
+         ==================================================================== -->
+    <section id="health" class="page">
+      <div class="section-head">
+        <div>
+          <h2>System Health & Diagnostics</h2>
+          <p>Real-time backend services, database status, OCR engine detection, and storage availability.</p>
+        </div>
+      </div>
+      <div class="step-card" id="healthItems"></div>
+    </section>
+
   </main>
-</div>
-<dialog id="vehicleDialog"><form id="vehicleForm"><div class="dialog-head"><div><div class="eyebrow">SAMPLE RECORD EDITOR</div><h2 id="dialogTitle">Add vehicle</h2></div><button type="button" id="closeDialog" class="xbtn">×</button></div><div class="dialog-body"><div class="gridform"><label>Registration number<input name="plate" id="vPlate" required minlength="6" maxlength="14" placeholder="WB00DE0007"></label><label>Vehicle / model<input name="model" id="vModel" maxlength="120" placeholder="Demo CNG sedan"></label><label>Sample owner name (optional)<input name="owner_name" id="vOwner" maxlength="120" placeholder="Fictional / test name only"></label><label>CNG endorsement in demo record<select name="cng_endorsed" id="vCNG"><option value="yes">Yes</option><option value="no">No</option><option value="unknown">Unknown</option></select></label><label>Assigned demo station<select id="vStation"><option value="1">Station 1</option></select></label><label>Notes<input name="notes" id="vNotes" maxlength="500" placeholder="Sample only"></label></div><div class="cyl-head"><h3>CNG cylinders</h3><button type="button" class="text-btn" id="addCylinder">+ Add cylinder</button></div><div id="cylinderForms"></div><div class="inline-warning">Use fictional registration plates and mock cylinder data for your client demonstration. Do not use real personal vehicle records without authorization.</div></div><div class="dialog-actions"><button type="button" id="cancelDialog" class="btn outline">Cancel</button><button type="submit" class="btn primary">Save vehicle record</button></div></form></dialog>
-<div id="toast" role="status" aria-live="polite"></div>
-<script src="/static/app.js" defer></script>
-</body></html>
+
+  <!-- Vehicle Add/Edit Dialog -->
+  <dialog id="vehicleDialog" style="border:1px solid var(--gov-border);border-radius:var(--radius);padding:24px;max-width:550px;width:100%;box-shadow:0 10px 25px rgba(0,0,0,0.3);">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gov-border);padding-bottom:10px;margin-bottom:16px;">
+      <strong id="dialogTitle" style="font-size:1.1rem;color:var(--gov-navy-dark);">Add Vehicle Record</strong>
+      <button type="button" id="closeDialog" class="btn outline" style="padding:2px 8px;">✕</button>
+    </div>
+    <form id="vehicleForm" style="display:grid;gap:10px;">
+      <label style="font-size:0.78rem;font-weight:700;">Plate Number: <input id="vPlate" required maxlength="16" placeholder="DL01AB1234" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;text-transform:uppercase;"></label>
+      <label style="font-size:0.78rem;font-weight:700;">Make / Model: <input id="vModel" placeholder="Maruti Suzuki WagonR CNG" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></label>
+      <label style="font-size:0.78rem;font-weight:700;">Owner Name: <input id="vOwner" placeholder="Rohit Sharma" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></label>
+      <label style="font-size:0.78rem;font-weight:700;">RC CNG Endorsed: 
+        <select id="vCNG" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;">
+          <option value="yes">Yes (Endorsed)</option>
+          <option value="no">No (Unendorsed)</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </label>
+      <label style="font-size:0.78rem;font-weight:700;">Station: <select id="vStation" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></select></label>
+      <label style="font-size:0.78rem;font-weight:700;">Notes: <input id="vNotes" placeholder="Demonstration Record" style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></label>
+      
+      <div style="margin-top:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:0.78rem;font-weight:800;">Cylinders:</span>
+          <button type="button" class="btn outline" id="addCylinder" style="padding:2px 8px;font-size:0.72rem;">+ Add Cylinder</button>
+        </div>
+        <div id="cylinderForms" style="display:grid;gap:8px;"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button type="submit" class="btn primary full">Save Record</button>
+        <button type="button" class="btn outline" id="cancelDialog">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Global Toast Notification -->
+  <div id="toast">Notification message</div>
+
+  <!-- 6. Official Indian Government Portal Footer -->
+  <footer class="gov-footer">
+    <div class="gov-footer-content">
+      <div>
+        <strong>पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय, भारत सरकार</strong><br>
+        <span style="opacity:0.8;">Ministry of Petroleum & Natural Gas | Petroleum and Explosives Safety Organisation (PESO)</span><br>
+        <small style="opacity:0.7;">Portal Designed, Developed and Hosted in compliance with GIGW 3.0 & Digital India Standards.</small>
+      </div>
+      <div class="gov-footer-links">
+        <a href="#">नियम एवं शर्तें | Terms</a>
+        <a href="#">गोपनीयता नीति | Privacy</a>
+        <a href="#">अभिगम्यता | Accessibility</a>
+        <a href="#">सहायता | Helpdesk</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/static/app.js" defer></script>
+</body>
+</html>

@@ -1,8 +1,9 @@
 """Seed data integrity (import works for SQLite and PostgreSQL ORM schemas)."""
-from app.database import SessionLocal, Station, Vehicle, Cylinder, seed_demo
+from app.database import Base, engine, SessionLocal, Station, Vehicle, Cylinder, seed_demo
 
 
 def test_100_demo_vehicle_records_are_idempotent():
+    Base.metadata.create_all(engine)
     with SessionLocal() as db:
         seed_demo(db)
         assert db.query(Vehicle).count() == 100

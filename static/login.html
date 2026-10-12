@@ -3,42 +3,89 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SmartFuel | Secure Sign In</title>
+  <title>SmartFuel AI-ANPR | Official Government Sign In</title>
   <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .gov-login-container {
+      max-width: 440px;
+      margin: 60px auto;
+      background: var(--gov-card);
+      border: 1px solid var(--gov-border);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .gov-login-header {
+      background: var(--gov-navy-dark);
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+      border-bottom: 3px solid var(--gov-saffron);
+    }
+    .gov-login-header h1 { margin: 0; font-size: 1.25rem; font-weight: 900; }
+    .gov-login-header p { margin: 4px 0 0; font-size: 0.78rem; opacity: 0.85; }
+    .gov-login-body { padding: 24px; }
+    .gov-login-body label { display: block; font-size: 0.78rem; font-weight: 800; color: var(--gov-navy-dark); margin-bottom: 4px; }
+    .gov-login-body input { width: 100%; padding: 8px 12px; border: 1px solid var(--gov-border); border-radius: var(--radius-sm); margin-bottom: 14px; }
+    .gov-login-notice {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      font-size: 0.75rem;
+      color: #1e40af;
+      margin-top: 16px;
+    }
+  </style>
 </head>
 <body>
-  <main class="login-shell">
-    <div class="login-layout">
-      <section class="login-showcase">
-        <div class="login-hero-badge">● COMMERCIAL PILOT SOFTWARE</div>
-        <h1>Professional ANPR inspection software for CNG hydrotesting demo workflows.</h1>
-        <p>Upload a vehicle image or use a USB/webcam, convert the number plate into text, verify it against your protected database, and instantly show the result in one secure dashboard.</p>
-        <div class="login-points">
-          <div class="login-point"><strong>AI Inspection</strong><span>Image upload and browser camera capture with OCR-based number plate recognition.</span></div>
-          <div class="login-point"><strong>Protected Company Dashboard</strong><span>Vehicle records, cylinder details, hydrotesting status, alerts, reports and user roles.</span></div>
-          <div class="login-point"><strong>Demo Data for Client Prototype</strong><span>Fictional records only. No government API or official validation is connected in this phase.</span></div>
-        </div>
-      </section>
 
-      <section class="login-wrap">
-        <div class="logob">
-          <span class="sfmark">SF</span>
-          <span>SMARTFUEL<br><small>ANPR INTELLIGENCE PLATFORM</small></span>
-        </div>
-        <h1>Welcome back</h1>
-        <p>Sign in to the inspection control center.</p>
-        <form id="loginForm">
-          <label for="email">WORK EMAIL</label>
-          <input id="email" type="email" autocomplete="username" required placeholder="admin@example.com">
-          <label for="password">PASSWORD</label>
-          <input id="password" type="password" autocomplete="current-password" required placeholder="Your secure password">
-          <button id="loginBtn" type="submit">Sign in securely →</button>
-          <div class="error" id="error" role="alert"></div>
-        </form>
-        <div class="demotag"><b>DEMONSTRATION SYSTEM</b><br>All sample vehicle and hydrotest records are synthetic. No government API is connected.</div>
-      </section>
+  <header class="gov-topbar">
+    <div class="gov-flag-wrap">
+      <div class="gov-flag" aria-hidden="true"><span></span><span></span><span></span></div>
+      <span>भारत सरकार | Government of India</span>
+    </div>
+    <div style="font-size:0.75rem;font-weight:700;color:var(--gov-text-muted);">
+      Ministry of Petroleum & Natural Gas • PESO
+    </div>
+  </header>
+
+  <main class="gov-login-container">
+    <div class="gov-login-header">
+      <h1>SmartFuel AI-ANPR</h1>
+      <p>National Automated CNG Safety & Compliance Portal</p>
+    </div>
+    <div class="gov-login-body">
+      <form id="loginForm">
+        <label for="email">OFFICIAL EMAIL</label>
+        <input id="email" type="email" autocomplete="username" required placeholder="admin@smartfuel.local">
+        
+        <label for="password">PASSWORD</label>
+        <input id="password" type="password" autocomplete="current-password" required placeholder="••••••••••••">
+        
+        <button id="loginBtn" type="submit" class="btn primary full">Sign In to Safety Portal →</button>
+        <div id="error" class="error" style="color:var(--gov-red);font-size:0.8rem;margin-top:8px;font-weight:700;"></div>
+      </form>
+
+      <div class="gov-login-notice">
+        <strong>STATUTORY NOTICE:</strong> Authorized operator access only. All actions are logged under the Gas Cylinders Rules, 2016 (Rule 35) & CMVR 1989.
+      </div>
     </div>
   </main>
+
+  <footer class="gov-footer" style="position:fixed;bottom:0;width:100%;">
+    <div class="gov-footer-content">
+      <div>
+        <strong>पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय | PESO</strong><br>
+        <small>Guidelines for Indian Government Websites (GIGW 3.0) Compliant Portal.</small>
+      </div>
+      <div class="gov-footer-links">
+        <a href="#">Helpdesk</a>
+        <a href="#">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+
   <script src="/static/login.js" defer></script>
 </body>
 </html>

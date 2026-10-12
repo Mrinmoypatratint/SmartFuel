@@ -1,6 +1,7 @@
 """Tests covering new exact-text synthetic image library and date integrity."""
 from pathlib import Path
 import csv
+import pytest
 from app.main import ROOT, cylinder_state
 from app.database import Cylinder, SessionLocal, Vehicle
 from fastapi.testclient import TestClient
@@ -56,6 +57,9 @@ def test_gallery_requires_auth_and_serves_matching_image():
 
 
 def test_demo_image_through_real_ocr_to_report():
+    from app.ocr_engine import configure_tesseract
+    if not configure_tesseract():
+        pytest.skip("Tesseract OCR not installed in system environment")
     import base64
     from app.security import hash_password
     from app.database import User, Station

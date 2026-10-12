@@ -1,5 +1,6 @@
 """Executable source-level integration tests: login, CSRF, RBAC, demo records, OCR and reports."""
 import os, sys, tempfile
+import pytest
 from pathlib import Path
 TMP=Path(tempfile.mkdtemp(prefix='sf-anpr-test-'))
 os.environ['DATABASE_URL']='sqlite:///'+str(TMP/'test.sqlite3')
@@ -66,6 +67,9 @@ def test_complete_workflow():
 
 
 def test_real_ocr():
+  from app.ocr_engine import configure_tesseract
+  if not configure_tesseract():
+    pytest.skip("Tesseract OCR not installed in system environment")
   import base64
   samples=Path(__file__).resolve().parents[1]/'samples'
   with TestClient(app) as client:

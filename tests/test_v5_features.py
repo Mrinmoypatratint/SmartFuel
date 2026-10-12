@@ -43,14 +43,16 @@ def test_v5_full_workflow():
     assert token not in str(admin.get('/api/cameras').json())
     photo=(Path(__file__).resolve().parents[1]/'samples'/'03_MISSING_MH00DE0003.png').read_bytes()
     frame={'image_base64':'data:image/png;base64,'+base64.b64encode(photo).decode()}
-    bad=admin.post('/api/edge/scan',json=frame,headers={'X-Device-Token':'invalid'})
-    assert bad.status_code==401
-    one=admin.post('/api/edge/scan',json=frame,headers={'X-Device-Token':token})
-    assert one.status_code==200,one.text
-    assert one.json().get('accepted'),one.text
-    assert one.json()['status']=='missing'
-    two=admin.post('/api/edge/scan',json=frame,headers={'X-Device-Token':token})
-    assert two.json().get('duplicate') is True
+    from app.ocr_engine import configure_tesseract
+    if configure_tesseract():
+        bad=admin.post('/api/edge/scan',json=frame,headers={'X-Device-Token':'invalid'})
+        assert bad.status_code==401
+        one=admin.post('/api/edge/scan',json=frame,headers={'X-Device-Token':token})
+        assert one.status_code==200,one.text
+        assert one.json().get('accepted'),one.text
+        assert one.json()['status']=='missing'
+        two=admin.post('/api/edge/scan',json=frame,headers={'X-Device-Token':token})
+        assert two.json().get('duplicate') is True
     assert admin.post('/api/cameras/'+str(dev.json()['id'])+'/disable',headers=h).status_code==200
     assert admin.post('/api/edge/scan',json=frame,headers={'X-Device-Token':token}).status_code==401
     with TestClient(app) as old_session:

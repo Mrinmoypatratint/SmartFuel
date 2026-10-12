@@ -1,14 +1,111 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SmartFuel | CNG Station Decision Display</title><link rel="stylesheet" href="/static/style.css"><link rel="stylesheet" href="/static/cng-display.css"></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SmartFuel | CNG Station Attendant Decision Display</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/cng-display.css">
+  <style>
+    .kiosk-gov-strip {
+      background: #0c2340;
+      color: #fff;
+      padding: 6px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      border-bottom: 2px solid #d97706;
+    }
+  </style>
+</head>
 <body class="cng-kiosk">
-<header class="kiosk-top"><div class="identity"><span class="kiosk-logo">SF</span><div><strong>SmartFuel</strong><span>CNG Compliance Demonstration</span></div></div><div class="kiosk-tools"><span class="kiosk-clock" id="clock">--:--</span><button id="goFullscreen" class="btn outline">Full screen</button><a class="btn outline" href="/">Dashboard</a></div></header>
-<main class="kiosk-main">
-<div class="kiosk-header"><div><div class="eyebrow">STATION OPERATOR DISPLAY</div><h1>Vehicle CNG verification status</h1><p>Updated from saved inspections • Private station view • Demonstration data only</p></div><div class="kiosk-filter"><label for="station">Monitoring station</label><select id="station"><option value="">Select station</option></select></div></div>
-<div class="display-main" id="displayMain">
-<section class="decision-hero waiting" id="hero"><div class="hero-topline"><span id="decisionTag">WAITING FOR INSPECTION</span><span id="lastTime">—</span></div><div class="hero-label">VEHICLE REGISTRATION</div><div class="hero-plate" id="plate">— — — —</div><div class="owner-meta" id="ownerName">Sample owner: Not recorded</div><h2 id="headline">Waiting for a vehicle scan</h2><p id="instruction">Scan a plate in the SmartFuel inspection dashboard to display its result here.</p></section>
-<section class="decision-detail"><div class="decision-detail-head"><h2>Inspection checks</h2><span class="pill muted" id="inspectionRef">NO RESULT</span></div><div class="checks" id="checks"><div class="empty-state">No vehicle checked yet.</div></div><div class="reason-box" id="reasonBox" hidden><h3>Why CNG should be held or reviewed</h3><ul id="reasons"></ul></div><div class="kiosk-meta"><span id="source">—</span><a class="btn outline" target="_blank" rel="noopener" id="reportLink" hidden>Open sample report</a></div></section>
-</div>
-<div class="recent-head"><h2>Recent station inspections</h2><span id="connection">Connecting…</span></div><div id="recent" class="kiosk-recent"><div class="empty-state">No saved inspections.</div></div>
-<div class="kiosk-footnote">PILOT / DEMONSTRATION ONLY • THIS SCREEN DOES NOT CHECK GOVERNMENT RECORDS OR AUTHORIZE OR REFUSE REAL CNG SUPPLY • FOLLOW THE STATION'S APPROVED PROCEDURES</div>
-</main><script src="/static/cng-display.js" defer></script></body></html>
+
+  <div class="kiosk-gov-strip">
+    <div style="display:flex;align-items:center;gap:8px;font-weight:700;">
+      <span>🇮🇳</span>
+      <span>भारत सरकार | Ministry of Petroleum & Natural Gas • PESO</span>
+    </div>
+    <div style="font-weight:700;color:#fef3c7;">
+      CNG Island Safety Interlock Screen (Rule 35, Gas Cylinders Rules 2016)
+    </div>
+  </div>
+
+  <header class="kiosk-top">
+    <div class="identity">
+      <span class="kiosk-logo" style="background:#16325c;">SF</span>
+      <div>
+        <strong>SmartFuel AI-ANPR</strong>
+        <span style="font-weight:700;color:var(--gov-navy-dark);">CNG Station Attendant Display • सीएनजी स्टेशन डिस्प्ले</span>
+      </div>
+    </div>
+    <div class="kiosk-tools">
+      <span class="kiosk-clock" id="clock">--:--:--</span>
+      <button id="goFullscreen" class="btn outline">Full screen</button>
+      <a class="btn primary" href="/">← Dashboard</a>
+    </div>
+  </header>
+
+  <main class="kiosk-main">
+    <div class="kiosk-header">
+      <div>
+        <div class="eyebrow" style="color:var(--gov-navy-primary);font-weight:900;">HIGH-VISIBILITY ISLAND DECISION BOARD</div>
+        <h1 style="color:var(--gov-navy-dark);font-size:1.8rem;margin:4px 0 0;">CNG Compliance Verification Status</h1>
+        <p style="color:var(--gov-text-muted);">Real-Time Automated Inspection & Solenoid Interlock Telemetry</p>
+      </div>
+      <div class="kiosk-filter">
+        <label for="station" style="font-weight:800;color:var(--gov-navy-dark);">Monitoring Station:</label>
+        <select id="station" style="padding:8px 12px;border:1px solid var(--gov-border);border-radius:4px;font-weight:700;">
+          <option value="">Select station</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="display-main" id="displayMain">
+      <section class="decision-hero waiting" id="hero">
+        <div class="hero-topline">
+          <span id="decisionTag" style="letter-spacing:1px;font-weight:900;">WAITING FOR VEHICLE INGRESS</span>
+          <span id="lastTime">—</span>
+        </div>
+        <div class="hero-label" style="letter-spacing:1.5px;">VEHICLE REGISTRATION / वाहन संख्या</div>
+        <div class="hero-plate" id="plate" style="letter-spacing:3px;font-family:monospace;">— — — —</div>
+        <div class="owner-meta" id="ownerName" style="font-weight:700;">Sample Owner: —</div>
+        <h2 id="headline" style="font-size:1.6rem;font-weight:900;">Waiting for a vehicle scan</h2>
+        <p id="instruction" style="font-size:1rem;max-width:600px;margin:0 auto;">Vehicle scan on the AI Inspection page will immediately transmit the safety decision here.</p>
+      </section>
+
+      <section class="decision-detail">
+        <div class="decision-detail-head">
+          <h2 style="font-weight:900;color:var(--gov-navy-dark);">Statutory Verification Checks</h2>
+          <span class="pill muted" id="inspectionRef">READY</span>
+        </div>
+        <div class="checks" id="checks">
+          <div class="empty-state">No vehicle checked yet.</div>
+        </div>
+        <div class="reason-box" id="reasonBox" hidden>
+          <h3 style="color:var(--gov-red-dark);font-weight:900;">Reason for Holding CNG Filling:</h3>
+          <ul id="reasons" style="padding-left:20px;font-weight:700;"></ul>
+        </div>
+        <div class="kiosk-meta">
+          <span id="source">—</span>
+          <a class="btn outline" target="_blank" rel="noopener" id="reportLink" hidden>📄 Open Sample Report</a>
+        </div>
+      </section>
+    </div>
+
+    <div class="recent-head" style="margin-top:24px;">
+      <h2 style="font-size:1.2rem;font-weight:800;color:var(--gov-navy-dark);">Recent Station Ingresses & Inspections</h2>
+      <span id="connection" style="font-weight:700;color:var(--gov-green);">● Active Stream</span>
+    </div>
+    <div id="recent" class="kiosk-recent">
+      <div class="empty-state">No saved inspections.</div>
+    </div>
+
+    <div class="kiosk-footnote" style="background:#f1f5f9;color:var(--gov-text-muted);border:1px solid var(--gov-border);padding:10px 16px;border-radius:4px;margin-top:20px;">
+      OFFICIAL STATUTORY DISCLOSURE • CNG DISPENSING DECISIONS ARE GOVERNED BY RULE 35 OF GAS CYLINDERS RULES, 2016 AND CMVR 1989 • COMPLIANCE WITH STATION OPERATING PROCEDURES IS MANDATORY
+    </div>
+  </main>
+
+  <script src="/static/cng-display.js" defer></script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 """v6 controlled camera entry workflow: OCR, ledger, privacy, duplicates, station scoping."""
 import base64, os, tempfile
+import pytest
 from pathlib import Path
 TEMP=Path(tempfile.mkdtemp(prefix='sf-anpr-v6-tests-'))
 os.environ.setdefault('DATABASE_URL','sqlite:///'+str(TEMP/'test.sqlite3'))
@@ -28,6 +29,9 @@ def image(name):
     return 'data:image/png;base64,'+base64.b64encode((SAMPLES/name).read_bytes()).decode('ascii')
 
 def test_auto_entry_full_pipeline():
+    from app.ocr_engine import configure_tesseract
+    if not configure_tesseract():
+        pytest.skip("Tesseract OCR not installed in system environment")
     with TestClient(app) as c:
         headers=login(c)
         sites=c.get('/api/stations').json(); sid=sites[0]['id']
@@ -64,6 +68,9 @@ def test_auto_entry_full_pipeline():
         assert bad.json()['accepted'] is False
 
 def test_low_confidence_requires_review_and_confirmation():
+    from app.ocr_engine import configure_tesseract
+    if not configure_tesseract():
+        pytest.skip("Tesseract OCR not installed in system environment")
     with TestClient(app) as c:
         headers=login(c)
         sid=c.get('/api/stations').json()[0]['id']
