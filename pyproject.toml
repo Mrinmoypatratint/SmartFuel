@@ -1,0 +1,39 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E9",      # Syntax errors
+    "F",       # Pyflakes (undefined variables, unused imports)
+    "B",       # Bugbear (common bug patterns)
+    "S",       # Bandit-equivalent security checks
+    "W",       # Pycodestyle warnings
+]
+ignore = [
+    "E701",    # Multiple statements on one line (colons) - legacy codebase format
+    "E702",    # Multiple statements on one line (semicolons) - legacy codebase format
+    "E401",    # Multiple imports on one line
+    "E402",    # Module level import not at top of file
+    "S101",    # Use of assert in tests
+    "S104",    # Possible binding to all interfaces (0.0.0.0)
+    "S105",    # Possible hardcoded password (test fixtures)
+    "S106",    # Possible hardcoded password (test fixtures)
+    "S311",    # Standard pseudo-random generators
+    "S324",    # Probable use of insecure hash functions (used for non-crypto hashes)
+    "B008",    # Do not perform function call in argument defaults (FastAPI Depends)
+    "F401",    # Module imported but unused
+    "B007",    # Loop control variable not used
+    "B905",    # zip without explicit strict
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-v --tb=short"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]

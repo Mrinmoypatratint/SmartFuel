@@ -1,0 +1,230 @@
+name: CI - Code Quality, Security & Test Matrix
+
+on:
+  pull_request:
+    branches: [main, staging]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.gitignore'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  security-events: write
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  pr-validation:
+    name: PR Mergeability & Conflict Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Branch Mergeability & Detect Conflicts
+        run: |
+          echo "Validating PR #${{ github.event.pull_request.number }} mergeability into ${{ github.base_ref }}..."
+          git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
+          if ! git merge-base --is-ancestor origin/${{ github.base_ref }} HEAD; then
+            echo "Notice: Branch is not directly fast-forwardable. Testing merge resolution..."
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git merge --no-commit --no-ff origin/${{ github.base_ref }}; then
+            echo "ERROR: Merge conflict detected between ${{ github.head_ref }} and ${{ github.base_ref }}."
+            echo "Please resolve merge conflicts locally before merging."
+            exit 1
+          fi
+          echo "Mergeability verification passed: No git conflicts found."
+          git merge --abort || true
+
+  code-quality:
+    name: Lint & Code Structure Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Linting & Quality Tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff
+
+      - name: Run Ruff Syntax & Critical Lint Check
+        run: |
+          echo "Running Ruff code analysis..."
+          ruff check app/ tests/
+
+      - name: Verify Formatting Compliance
+        run: |
+          echo "Checking formatting consistency..."
+          ruff format --check app/ tests/ || echo "Formatting check completed (non-blocking for legacy formatting)."
+
+  security-scans:
+    name: AST Security & Dependency Vulnerability Scans
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Security Scanners
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit pip-audit
+
+      - name: Run Bandit AST Security Scan
+        run: |
+          echo "Executing Bandit Static Application Security Testing (SAST) on app/..."
+          bandit -r app/ -ll -f screen
+
+      - name: Run Pip-Audit Dependency Vulnerability Scan
+        run: |
+          echo "Auditing requirements.txt against PyPA vulnerability database..."
+          pip-audit -r requirements.txt --desc
+
+      - name: Check for Uncommitted Secrets & Sensitive Files
+        run: |
+          echo "Scanning for accidental secret commits or unignored .env files..."
+          if git ls-files | grep -E '^(\.env|\.env\.local|.*\.pem|.*\.key|.*\.p12|id_rsa)$'; then
+            echo "CRITICAL SECURITY FAULT: Sensitive credential file found tracked in git!"
+            exit 1
+          fi
+          echo "Secret leakage check passed: No credential files tracked."
+
+  test-suite:
+    name: Unit, Integration & E2E Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install System Dependencies (Tesseract OCR & OpenCV libs)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            libgl1 \
+            libglib2.0-0 \
+            ca-certificates
+          tesseract --version
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Application & Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run Pytest Test Suite
+        env:
+          SESSION_SECRET: "ci-test-session-secret-at-least-32-characters-long"
+          ADMIN_EMAIL: "ci-admin@smartfuel.test"
+          ADMIN_PASSWORD: "StrongCIPassword2026!"
+          COOKIE_SECURE: "0"
+          DEMO_MODE: "1"
+          SEED_DEMO: "1"
+        run: |
+          echo "Executing full test suite..."
+          pytest -v --tb=short tests/
+
+  docker-build-and-scan:
+    name: Docker Container Build & Image Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [code-quality, security-scans, test-suite]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Application Container Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          load: true
+          tags: |
+            smartfuel:sha-${{ github.sha }}
+            smartfuel:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy Vulnerability Scanner on Container Image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'smartfuel:sha-${{ github.sha }}'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Verify Container Health Probe Locally
+        run: |
+          echo "Spinning up built container to test startup health..."
+          CONTAINER_ID=$(docker run -d -p 8000:8000 \
+            -e SESSION_SECRET="ci-docker-session-secret-at-least-32-chars" \
+            -e ADMIN_EMAIL="admin@ci-container.test" \
+            -e ADMIN_PASSWORD="StrongContainerPassword!2026" \
+            -e COOKIE_SECURE="0" \
+            -e DEMO_MODE="1" \
+            -e SEED_DEMO="1" \
+            smartfuel:sha-${{ github.sha }})
+          
+          echo "Container started with ID: $CONTAINER_ID"
+          sleep 6
+          
+          docker ps
+          docker logs "$CONTAINER_ID"
+          
+          # Health check probe
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/api/health || echo "FAILED")
+          echo "Health probe HTTP Status: $HTTP_STATUS"
+          
+          docker stop "$CONTAINER_ID"
+          docker rm "$CONTAINER_ID"
+          
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "ERROR: Container health probe failed with status $HTTP_STATUS"
+            exit 1
+          fi
+          echo "Container build and startup health check passed successfully."

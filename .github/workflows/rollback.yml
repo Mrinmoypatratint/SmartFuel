@@ -1,0 +1,127 @@
+name: SRE - Rollback to Known-Good Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Environment to roll back'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+      rollback_to_commit_sha:
+        description: 'Commit SHA to roll back to (Leave empty to use .previous_known_good_commit)'
+        required: false
+        default: ''
+      restore_database:
+        description: 'Restore database from latest pre-flight backup (DESTRUCTIVE to uncommitted records)'
+        required: true
+        type: boolean
+        default: false
+      confirm_rollback_action:
+        description: 'Type "ROLLBACK" to execute recovery procedure'
+        required: true
+        default: ''
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: rollback-${{ github.event.inputs.target_environment }}
+  cancel-in-progress: false
+
+jobs:
+  execute-safe-rollback:
+    name: SRE Automated Recovery & Rollback
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.target_environment }}
+    steps:
+      - name: Validate Operator Confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm_rollback_action }}" != "ROLLBACK" ]; then
+            echo "ERROR: Rollback operation cancelled."
+            echo "You must enter 'ROLLBACK' in confirm_rollback_action to trigger SRE recovery."
+            exit 1
+          fi
+          echo "Rollback authorization confirmed."
+
+      - name: Setup SSH Connection
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ github.event.inputs.target_environment == 'production' && secrets.PRODUCTION_SSH_KEY || secrets.STAGING_SSH_KEY }}
+
+      - name: Add Known Hosts
+        env:
+          TARGET_HOST: ${{ github.event.inputs.target_environment == 'production' && secrets.PRODUCTION_HOST || secrets.STAGING_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H $TARGET_HOST >> ~/.ssh/known_hosts
+
+      - name: Execute Server Rollback Procedure
+        env:
+          TARGET_HOST: ${{ github.event.inputs.target_environment == 'production' && secrets.PRODUCTION_HOST || secrets.STAGING_HOST }}
+          TARGET_USER: ${{ github.event.inputs.target_environment == 'production' && secrets.PRODUCTION_USER || secrets.STAGING_USER }}
+          DEPLOY_PATH: ${{ github.event.inputs.target_environment == 'production' && (vars.PRODUCTION_DEPLOY_PATH || '/opt/smartfuel-anpr') || (vars.STAGING_DEPLOY_PATH || '/opt/smartfuel-anpr-staging') }}
+          TARGET_COMMIT: ${{ github.event.inputs.rollback_to_commit_sha }}
+          RESTORE_DB: ${{ github.event.inputs.restore_database }}
+        run: |
+          echo "Connecting to $TARGET_USER@$TARGET_HOST for emergency rollback..."
+          ssh $TARGET_USER@$TARGET_HOST "bash -s" << 'EOF'
+            set -euo pipefail
+            DEPLOY_DIR="${DEPLOY_PATH}"
+            cd "$DEPLOY_DIR"
+            
+            echo "=== SRE EMERGENCY ROLLBACK TRIGGERED ==="
+            
+            # Determine rollback commit
+            if [ -n "$TARGET_COMMIT" ]; then
+              ROLLBACK_SHA="$TARGET_COMMIT"
+            elif [ -f ".previous_known_good_commit" ]; then
+              ROLLBACK_SHA=$(cat .previous_known_good_commit)
+            else
+              echo "ERROR: No target commit specified and .previous_known_good_commit not found!"
+              exit 1
+            fi
+            
+            echo "Rolling back application code to commit: $ROLLBACK_SHA"
+            git fetch --all
+            git checkout -f "$ROLLBACK_SHA"
+            
+            # Optional Database Restoration (Only if explicitly checked)
+            if [ "$RESTORE_DB" = "true" ]; then
+              echo ">>> RESTORING DATABASE FROM LATEST PRE-FLIGHT BACKUP <<<"
+              LATEST_BACKUP=$(ls -t private-backups/smartfuel-db-*.sql.gz | head -1)
+              if [ -n "$LATEST_BACKUP" ] && [ -f "$LATEST_BACKUP" ]; then
+                echo "Restoring from backup: $LATEST_BACKUP"
+                gunzip -c "$LATEST_BACKUP" | docker compose exec -T database sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+                echo "Database restored successfully."
+              else
+                echo "WARNING: No backup file found in private-backups/ to restore."
+              fi
+            else
+              echo "Preserving existing database data (application-only rollback)."
+            fi
+            
+            # Rebuild and restart containers
+            echo "Rebuilding and restarting service containers..."
+            docker compose build --pull
+            docker compose up -d --remove-orphans
+            
+            echo "Waiting for container initialization..."
+            sleep 10
+            docker compose ps
+          EOF
+
+      - name: Verify Post-Rollback Health Check
+        env:
+          TARGET_URL: ${{ github.event.inputs.target_environment == 'production' && (vars.PRODUCTION_URL || format('https://{0}', secrets.PRODUCTION_HOST)) || (vars.STAGING_URL || format('http://{0}:8000', secrets.STAGING_HOST)) }}
+        run: |
+          echo "Verifying health post-rollback at: $TARGET_URL..."
+          HTTP_STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" "$TARGET_URL/api/health" || echo "ERR")
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "CRITICAL: Service health check failed after rollback (HTTP $HTTP_STATUS)!"
+            exit 1
+          fi
+          echo "SUCCESS: Rollback complete and service health verified (HTTP 200)."

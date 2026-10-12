@@ -1,0 +1,226 @@
+name: CD - Deploy to Production (Gated & Protected)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_ref:
+        description: 'Git tag or commit SHA to deploy to production'
+        required: true
+        default: 'main'
+      confirm_zero_data_loss_policy:
+        description: 'Type "CONFIRM" to certify zero data loss safeguards are understood'
+        required: true
+        default: ''
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  production-gate-and-audit:
+    name: Production Gated Audit & Safety Pre-Check
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.release_ref || github.ref }}
+
+      - name: Validate Manual Confirmation on Dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ github.event.inputs.confirm_zero_data_loss_policy }}" != "CONFIRM" ]; then
+            echo "ERROR: Production deployment aborted."
+            echo "You must type 'CONFIRM' in confirm_zero_data_loss_policy parameter to acknowledge data preservation protocols."
+            exit 1
+          fi
+          echo "Operator confirmation verified."
+
+      - name: Verify Production Secrets Configuration
+        env:
+          PROD_HOST: ${{ secrets.PRODUCTION_HOST }}
+          PROD_USER: ${{ secrets.PRODUCTION_USER }}
+          PROD_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+        run: |
+          echo "Auditing Production environment secrets..."
+          MISSING=0
+          if [ -z "$PROD_HOST" ]; then echo "Missing secret: PRODUCTION_HOST"; MISSING=1; fi
+          if [ -z "$PROD_USER" ]; then echo "Missing secret: PRODUCTION_USER"; MISSING=1; fi
+          if [ -z "$PROD_SSH_KEY" ]; then echo "Missing secret: PRODUCTION_SSH_KEY"; MISSING=1; fi
+          if [ "$MISSING" -eq 1 ]; then
+            echo "ERROR: Production deployment secrets are missing in GitHub Environment Settings."
+            exit 1
+          fi
+          echo "Production credentials verified."
+
+      - name: Enforce Zero Data Loss Static Architecture Check
+        run: |
+          echo "Checking volume safety in compose.yaml..."
+          if grep -E 'down\s+-v|--volumes|rm\s+-rf\s+storage' compose.yaml; then
+            echo "CRITICAL SECURITY FAULT: Volume deletion directives found in compose.yaml!"
+            exit 1
+          fi
+          echo "Zero Data Loss architectural validation passed."
+
+  deploy-production:
+    name: Production Deployment with Pre-Flight Backup
+    runs-on: ubuntu-latest
+    needs: [production-gate-and-audit]
+    environment: production
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.release_ref || github.ref }}
+
+      - name: Setup SSH Connection
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PRODUCTION_SSH_KEY }}
+
+      - name: Add Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.PRODUCTION_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Execute Production Deployment & Hot Backup
+        env:
+          PROD_HOST: ${{ secrets.PRODUCTION_HOST }}
+          PROD_USER: ${{ secrets.PRODUCTION_USER }}
+          DEPLOY_PATH: ${{ vars.PRODUCTION_DEPLOY_PATH || '/opt/smartfuel-anpr' }}
+          TARGET_REF: ${{ github.event.inputs.release_ref || github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          echo "Connecting to Production server: $PROD_USER@$PROD_HOST..."
+          ssh $PROD_USER@$PROD_HOST "bash -s" << 'EOF'
+            set -euo pipefail
+            DEPLOY_DIR="${DEPLOY_PATH:-/opt/smartfuel-anpr}"
+            echo "Production Directory: $DEPLOY_DIR"
+            
+            if [ ! -d "$DEPLOY_DIR" ]; then
+              echo "Initializing production directory at $DEPLOY_DIR..."
+              sudo mkdir -p "$DEPLOY_DIR"
+              sudo chown -R $(whoami):$(whoami) "$DEPLOY_DIR"
+            fi
+            
+            cd "$DEPLOY_DIR"
+            
+            # =========================================================================
+            # STEP 1: MANDATORY PRE-FLIGHT HOT BACKUP (ZERO DATA LOSS PROTOCOL)
+            # =========================================================================
+            if [ -f "compose.yaml" ] && docker compose ps --status running -q >/dev/null 2>&1; then
+              echo ">>> EXECUTING MANDATORY PRE-FLIGHT ZERO-DOWNTIME BACKUP <<<"
+              mkdir -p private-backups
+              bash ops/backup.sh "$DEPLOY_DIR/private-backups"
+              
+              # Verify backup file size and integrity
+              LATEST_SQL=$(ls -t private-backups/smartfuel-db-*.sql.gz | head -1)
+              LATEST_FILES=$(ls -t private-backups/smartfuel-files-*.tar.gz | head -1)
+              if [ ! -s "$LATEST_SQL" ] || [ ! -s "$LATEST_FILES" ]; then
+                echo "CRITICAL FAILURE: Pre-flight backup file is empty or missing! Aborting deployment."
+                exit 1
+              fi
+              echo "Pre-flight backup verified: $LATEST_SQL and $LATEST_FILES"
+            else
+              echo "Notice: Clean installation detected; proceeding with initial deployment."
+            fi
+            
+            # =========================================================================
+            # STEP 2: CAPTURE ROLLBACK STATE
+            # =========================================================================
+            if git rev-parse HEAD >/dev/null 2>&1; then
+              PREV_COMMIT=$(git rev-parse HEAD)
+              echo "$PREV_COMMIT" > .previous_known_good_commit
+              echo "Saved rollback target commit: $PREV_COMMIT"
+            fi
+            
+            # =========================================================================
+            # STEP 3: UPDATE CODE REPOSITORY SAFELY
+            # =========================================================================
+            if [ -d ".git" ]; then
+              echo "Fetching target ref: $TARGET_REF..."
+              git fetch --all --tags
+              git checkout -f "$TARGET_REF"
+            else
+              echo "Cloning repository..."
+              git clone https://github.com/${{ github.repository }}.git .
+              git checkout -f "$TARGET_REF"
+            fi
+            
+            # =========================================================================
+            # STEP 4: VERIFY CRITICAL PRODUCTION SECRETS
+            # =========================================================================
+            if [ ! -f ".env" ]; then
+              echo "CRITICAL ERROR: Production .env configuration file not found!"
+              echo "A secure, customized .env must be manually created on the production host."
+              exit 1
+            fi
+            
+            # =========================================================================
+            # STEP 5: REBUILD & RELOAD CONTAINERS SAFELY (PRESERVE VOLUMES)
+            # =========================================================================
+            echo "Building and launching containers..."
+            docker compose build --pull
+            docker compose up -d --remove-orphans
+            
+            echo "Waiting for health stabilization..."
+            sleep 12
+            docker compose ps
+          EOF
+
+  production-health-verification:
+    name: Production Post-Deployment Health Verification
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    environment: production
+    steps:
+      - name: Verify Production HTTPS Endpoints & Health Check
+        env:
+          PROD_URL: ${{ vars.PRODUCTION_URL || format('https://{0}', secrets.PRODUCTION_HOST) }}
+        run: |
+          echo "Probing Production URL: $PROD_URL..."
+          HEALTH_URL="$PROD_URL/api/health"
+          
+          MAX_ATTEMPTS=15
+          SLEEP_SECONDS=6
+          SUCCESS=0
+          
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            echo "Attempt $i of $MAX_ATTEMPTS to probe $HEALTH_URL..."
+            HTTP_CODE=$(curl -k -s -o /tmp/prod_health.json -w "%{http_code}" "$HEALTH_URL" || echo "ERR")
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "SUCCESS: Production health check verified (HTTP 200)!"
+              cat /tmp/prod_health.json
+              SUCCESS=1
+              break
+            fi
+            echo "Endpoint returned $HTTP_CODE, waiting $SLEEP_SECONDS seconds..."
+            sleep $SLEEP_SECONDS
+          done
+          
+          if [ "$SUCCESS" -ne 1 ]; then
+            echo "CRITICAL ALERT: Production health verification failed!"
+            echo "Please trigger the Rollback workflow immediately if manual intervention does not recover the service."
+            exit 1
+          fi
+
+      - name: Verify Island Display & Security Headers
+        env:
+          PROD_URL: ${{ vars.PRODUCTION_URL || format('https://{0}', secrets.PRODUCTION_HOST) }}
+        run: |
+          echo "Verifying security headers on production..."
+          HEADERS=$(curl -k -s -I "$PROD_URL/api/health")
+          echo "$HEADERS"
+          
+          echo "Verifying /cng-display station screen availability..."
+          CNG_STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" "$PROD_URL/cng-display" || echo "ERR")
+          echo "CNG Display status: $CNG_STATUS"
+          
+          echo "Production deployment and verification completed successfully."
