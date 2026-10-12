@@ -1,11 +1,11 @@
 'use strict';
 
 /**
- * SmartFuel AI-ANPR — Official Government Portal Authentication Controller
+ * SmartFuel — Official Government Portal Authentication Controller
  * Specs:
- * - High-trust Navy & Gold color structure (Indian Navy layout standard)
+ * - Authentic Government of India / NIC & PESO standard
  * - Dynamic security CAPTCHA generator & validator
- * - Pure Petroleum & PESO statutory compliance terminology (Zero defence text)
+ * - Pure Petroleum & PESO statutory compliance terminology (Zero AI themes / zero defence text)
  * - GIGW 3.0 accessibility font scaling & high-contrast mode
  * - 1-Click fast evaluation credential autofill
  */
@@ -13,61 +13,63 @@
 const DICT = {
   en: {
     govName: 'भारत सरकार | Government of India',
+    ministryTop: 'पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय • PESO',
     branch: 'पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय • PESO | MINISTRY OF PETROLEUM & NATURAL GAS',
-    portalTitle: 'SmartFuel AI-ANPR',
+    portalTitle: 'SmartFuel | National CNG Safety & Compliance Portal',
     portalSub: 'National Automated CNG Safety Verification & Solenoid Hardware Interlock Gateway',
     mottoHindi: 'सत्यमेव जयते',
     mottoSub: 'GAS CYLINDERS RULES, 2016 • CMVR 1989 COMPLIANT',
-    ticker: 'Mandatory HSRP ANPR verification & solenoid fuel-lock enforced under Rule 35, Gas Cylinders Rules 2016 and CMVR 1989 Rule 115A across all dispensing islands.',
+    ticker: 'Mandatory HSRP optical verification & solenoid fuel-lock enforced under Rule 35, Gas Cylinders Rules 2016 and CMVR 1989 Rule 115A across all dispensing islands.',
     directivesHeader: 'महत्वपूर्ण निर्देश एवं सुरक्षा मानक | OFFICIAL DIRECTIVES',
-    mandateBanner: '<strong>STATUTORY MANDATE (PESO / MoRTH / CGD NETWORKS):</strong> Automated verification is legally mandated to prevent catastrophic onboard high-pressure cylinder ruptures. Fuel dispensing is automatically locked for unauthorized or expired vehicles.',
-    dirTitle1: 'Neural HSRP Computer Vision ANPR',
-    dirDesc1: 'Sub-second optical plate recognition compatible with standard state plates and BH-series Bharat registration numbers.',
-    dirTitle2: 'PESO Hydro-Test Compliance Lock',
-    dirDesc2: 'Zero-tolerance automated interlock: immediate dispensing lockout if cylinder hydro-test certificate exceeds 3-year statutory limit.',
-    dirTitle3: 'MODBUS-RTU Hardware Interlock',
-    dirDesc3: 'Sub-100ms hardware electrical relay cut-off switch wired directly into dispenser solenoid valves.',
-    dirTitle4: 'Cryptographic SHA-256 Safety Ledger',
-    dirDesc4: 'Immutable cryptographic audit records of all inspection decisions, timestamps, and operator actions.',
-    authBadge: 'STATUTORY SAFETY GATEWAY',
+    mandateBanner: '<strong>STATUTORY MANDATE (PESO / MoRTH / CGD NETWORKS):</strong> Automated verification is legally mandated under Rule 35, Gas Cylinders Rules 2016 and CMVR 1989 to prevent catastrophic onboard high-pressure cylinder ruptures. Fuel dispensing is automatically locked for unauthorized or expired vehicles.',
+    dirTitle1: 'HSRP Number Plate Optical Verification (CMVR 1989 Rule 115A)',
+    dirDesc1: 'Sub-second optical plate recognition compatible with standard state plates and BH-series Bharat registration numbers prior to nozzle unlock.',
+    dirTitle2: 'PESO 3-Year Hydrostatic Stretch Testing (Rule 35)',
+    dirDesc2: 'Zero-tolerance automated interlock: immediate dispensing lockout if cylinder hydro-test certificate exceeds 3-year statutory validity.',
+    dirTitle3: 'MODBUS-RTU Hardware Solenoid Interlock',
+    dirDesc3: 'Sub-100ms hardware electrical relay cut-off switch wired directly into dispenser solenoid valves for automated emergency fuel stop.',
+    dirTitle4: 'Cryptographic Electronic Safety Ledger (SHA-256)',
+    dirDesc4: 'Immutable cryptographic audit records of all inspection decisions, timestamps, and operator dispensing actions.',
+    authBadge: 'GOVERNMENT OF INDIA SECURE PORTAL',
     signInHeading: 'अधिकारी / ऑपरेटर लॉगिन | Officer Sign In',
     signInSub: 'Enter your official registered credentials to access the safety verification console.',
-    lblEmail: 'OFFICIAL SERVICE EMAIL ID',
-    lblPassword: 'SECURITY PASSWORD',
-    captchaTitle: 'SECURITY CAPTCHA VERIFICATION',
+    lblEmail: 'OFFICIAL SERVICE EMAIL ID / उपयोगकर्ता आईडी',
+    lblPassword: 'SECURITY PASSWORD / सुरक्षा पासवर्ड',
+    captchaTitle: 'SECURITY CAPTCHA VERIFICATION / सुरक्षा कैप्चा',
     btnSignIn: 'सुरक्षित लॉगिन करें | SECURE SIGN IN →',
-    quickCreds: 'Demo Evaluation Credentials (1-Click Fill):',
-    secTitle: '⚠️ STATUTORY REGULATORY NOTICE:',
-    secText: 'This is a protected Government of India safety console. Authorized operator access only under the Gas Cylinders Rules 2016 (Rule 35) and Sections 43 & 66 of the Information Technology Act, 2000. All activities and network IPs are monitored and logged.'
+    quickCreds: 'पोर्टल मूल्यांकन हेतु त्वरित क्रेडेंशियल (Demo Fill):',
+    secTitle: '⚠️ वैधानिक चेतावनी / STATUTORY REGULATORY NOTICE:',
+    secText: 'This is a protected Government of India safety portal. Unauthorized access, tampering or data exfiltration is a cognizable offense punishable under Sections 43 & 66 of the Information Technology Act, 2000 and the Gas Cylinders Rules 2016. All actions are logged with network IP and timestamps.'
   },
   hi: {
     govName: 'भारत सरकार | Government of India',
+    ministryTop: 'पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय • PESO',
     branch: 'पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय • PESO | MINISTRY OF PETROLEUM & NATURAL GAS',
-    portalTitle: 'SmartFuel AI-ANPR',
+    portalTitle: 'स्मार्टफ्यूल | राष्ट्रीय सीएनजी सुरक्षा एवं अनुपालन सत्यापन पोर्टल',
     portalSub: 'राष्ट्रीय स्वचालित सीएनजी सुरक्षा सत्यापन एवं सोलेनोइड हार्डवेयर इंटरलॉक गेटवे',
     mottoHindi: 'सत्यमेव जयते',
     mottoSub: 'गैस सिलिंडर नियम 2016 • सीएमवीआर 1989 अनुपालन',
-    ticker: 'गैस सिलिंडर नियम 2016 (नियम 35) एवं सीएमवीआर 1989 (नियम 115A) के तहत सभी सीएनजी आइलैंड्स पर एचएसआरपी एएनपीआर सत्यापन एवं सोलेनोइड कट-ऑफ अनिवार्य है।',
+    ticker: 'गैस सिलिंडर नियम 2016 (नियम 35) एवं सीएमवीआर 1989 (नियम 115A) के तहत सभी सीएनजी आइलैंड्स पर एचएसआरपी सत्यापन एवं सोलेनोइड कट-ऑफ अनिवार्य है।',
     directivesHeader: 'महत्वपूर्ण निर्देश एवं सुरक्षा मानक | OFFICIAL DIRECTIVES',
-    mandateBanner: '<strong>सांविधिक अधिदेश (पेसो / सड़क परिवहन मंत्रालय / सीजीडी नेटवर्क):</strong> ऑनबोर्ड उच्च दबाव सिलेंडर विस्फोट को रोकने हेतु स्वचालित सत्यापन अनिवार्य है। गैर-अनुपालन वाले वाहनों के लिए ईंधन वितरण तुरंत बंद हो जाता है।',
-    dirTitle1: 'न्यूरल एचएसआरपी कंप्यूटर विजन एएनपीआर',
-    dirDesc1: 'मानक राज्य नंबर प्लेट एवं बीएच-श्रृंखला भारत पंजीकरण हेतु तीव्र ऑप्टिकल पहचान।',
-    dirTitle2: 'पेसो हाइड्रो-टेस्ट अनुपालन इंटरलॉक',
-    dirDesc2: 'शून्य-सहनशीलता स्वचालित इंटरलॉक: यदि सिलेंडर परीक्षण 3 वर्ष से पुराना है तो त्वरित वितरण निषेध।',
-    dirTitle3: 'मोडबस-आरटीयू हार्डवेयर इंटरलॉक',
-    dirDesc3: 'डिस्पेंसर सोलेनोइड वाल्व में सीधे जुड़े सब-100 मिलीसेकंड हार्डवेयर रिले कट-ऑफ स्विच।',
-    dirTitle4: 'क्रिप्टोग्राफिक एसएचए-256 सुरक्षा लेज़र',
-    dirDesc4: 'सभी निरीक्षण निर्णयों, समय और ऑपरेटर कार्रवाइयों का अपरिवर्तनीय डिजिटल रिकॉर्ड।',
-    authBadge: 'सांविधिक सुरक्षा अधिकृत प्रवेश द्वार',
+    mandateBanner: '<strong>सांविधिक अधिदेश (पेसो / सड़क परिवहन मंत्रालय / सीजीडी नेटवर्क):</strong> ऑनबोर्ड उच्च दबाव सिलेंडर विस्फोट को रोकने हेतु स्वचालित सत्यापन अनिवार्य है। गैर-अनुपालन वाले वाहनों के लिए ईंधन वितरण स्वतः बंद हो जाता है।',
+    dirTitle1: 'एचएसआरपी नंबर प्लेट ऑप्टिकल सत्यापन (सीएमवीआर 1989 नियम 115A)',
+    dirDesc1: 'ईंधन वितरण नोजल अनलॉक से पूर्व मानक राज्य एवं बीएच-श्रृंखला भारत पंजीकरण प्लेटों की तीव्र ऑप्टिकल पहचान।',
+    dirTitle2: 'पेसो 3-वर्षीय हाइड्रोस्टेटिक स्ट्रेच परीक्षण (नियम 35)',
+    dirDesc2: 'शून्य-सहनशीलता स्वचालित इंटरलॉक: यदि सिलेंडर हाइड्रो-परीक्षण 3 वर्ष से अधिक पुराना है तो तत्काल ईंधन लॉक।',
+    dirTitle3: 'मोडबस-आरटीयू हार्डवेयर सोलेनोइड इंटरलॉक',
+    dirDesc3: 'डिस्पेंसर सोलेनोइड वाल्व में सीधे जुड़े सब-100 मिलीसेकंड हार्डवेयर रिले कट-ऑफ स्विच द्वारा आपातकालीन शट-ऑफ।',
+    dirTitle4: 'क्रिप्टोग्राफिक इलेक्ट्रॉनिक सुरक्षा लेज़र (एसएचए-256)',
+    dirDesc4: 'सभी निरीक्षण निर्णयों, समय और ऑपरेटर वितरण कार्रवाइयों का अपरिवर्तनीय डिजिटल रिकॉर्ड।',
+    authBadge: 'भारत सरकार अधिकृत सुरक्षित पोर्टल',
     signInHeading: 'अधिकारी / ऑपरेटर लॉगिन | Officer Sign In',
     signInSub: 'सुरक्षा कंसोल तक पहुंचने हेतु अपना आधिकारिक सेवा पहचान पत्र एवं पासवर्ड दर्ज करें।',
-    lblEmail: 'आधिकारिक सेवा ईमेल आईडी',
-    lblPassword: 'सुरक्षा पासवर्ड',
-    captchaTitle: 'सुरक्षा कैप्चा सत्यापन',
+    lblEmail: 'आधिकारिक सेवा ईमेल आईडी / उपयोगकर्ता आईडी',
+    lblPassword: 'सुरक्षा पासवर्ड / पासवर्ड',
+    captchaTitle: 'सुरक्षा कैप्चा सत्यापन / सुरक्षा कोड',
     btnSignIn: 'सुरक्षित लॉगिन करें | SECURE SIGN IN →',
-    quickCreds: 'डेमो मूल्यांकन क्रेडेंशियल (एक-क्लिक भरें):',
-    secTitle: '⚠️ सांविधिक सुरक्षा चेतावनी:',
-    secText: 'यह भारत सरकार का संरक्षित सुरक्षा कंसोल है। गैस सिलिंडर नियम 2016 (नियम 35) तथा आईटी अधिनियम 2000 के तहत अनाधिकृत पहुंच दंडनीय अपराध है। सभी गतिविधियां और आईपी लॉग की जाती हैं।'
+    quickCreds: 'पोर्टल मूल्यांकन हेतु त्वरित क्रेडेंशियल (Demo Fill):',
+    secTitle: '⚠️ वैधानिक चेतावनी / STATUTORY REGULATORY NOTICE:',
+    secText: 'यह भारत सरकार का संरक्षित पोर्टल है। अनाधिकृत पहुंच, दुरुपयोग या डेटा छेड़छाड़ सूचना प्रौद्योगिकी अधिनियम 2000 की धारा 43 एवं 66 तथा गैस सिलिंडर नियम 2016 के तहत संज्ञेय एवं दंडनीय अपराध है। सभी गतिविधियां और आईपी लॉग की जाती हैं।'
   }
 };
 
@@ -95,6 +97,7 @@ function applyLang(lang) {
   const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
 
   setText('txtGovName', d.govName);
+  setText('txtMinistryTop', d.ministryTop);
   setText('txtHeaderBranch', d.branch);
   setText('txtPortalTitle', d.portalTitle);
   setText('txtPortalSub', d.portalSub);
@@ -144,6 +147,23 @@ document.getElementById('btnRefreshCaptcha')?.addEventListener('click', () => {
   if (cInp) cInp.value = '';
 });
 
+// Role buttons toggle
+document.querySelectorAll('.gov-role-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.gov-role-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const role = btn.dataset.role;
+    const emailField = document.getElementById('email');
+    if (role === 'admin') {
+      document.getElementById('btnCredAdmin')?.click();
+    } else if (role === 'operator') {
+      document.getElementById('btnCredOperator')?.click();
+    } else if (role === 'inspector') {
+      document.getElementById('btnCredAuditor')?.click();
+    }
+  });
+});
+
 // Accessibility font sizing
 const body = document.body;
 document.getElementById('btnFontIncr')?.addEventListener('click', () => {
@@ -183,6 +203,8 @@ document.getElementById('btnCredAdmin')?.addEventListener('click', () => {
   document.getElementById('captchaInput').value = currentCaptcha;
   const err = document.getElementById('error');
   if (err) err.style.display = 'none';
+  document.querySelectorAll('.gov-role-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('roleBtnAdmin')?.classList.add('active');
 });
 document.getElementById('btnCredOperator')?.addEventListener('click', () => {
   document.getElementById('email').value = 'operator@example.test';
@@ -190,6 +212,8 @@ document.getElementById('btnCredOperator')?.addEventListener('click', () => {
   document.getElementById('captchaInput').value = currentCaptcha;
   const err = document.getElementById('error');
   if (err) err.style.display = 'none';
+  document.querySelectorAll('.gov-role-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('roleBtnOperator')?.classList.add('active');
 });
 document.getElementById('btnCredAuditor')?.addEventListener('click', () => {
   document.getElementById('email').value = 'viewer@example.test';
@@ -197,6 +221,8 @@ document.getElementById('btnCredAuditor')?.addEventListener('click', () => {
   document.getElementById('captchaInput').value = currentCaptcha;
   const err = document.getElementById('error');
   if (err) err.style.display = 'none';
+  document.querySelectorAll('.gov-role-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('roleBtnInspector')?.classList.add('active');
 });
 
 // Login Form Submit with CAPTCHA verification
@@ -228,7 +254,7 @@ document.getElementById('loginForm')?.addEventListener('submit', async e => {
   }
 
   loginBtn.disabled = true;
-  loginBtn.innerHTML = '<span>Verifying Credentials...</span>';
+  loginBtn.innerHTML = '<span>Verifying Official Credentials...</span>';
   errorEl.style.display = 'none';
 
   try {
