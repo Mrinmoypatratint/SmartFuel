@@ -162,27 +162,28 @@ $('btnLangToggle')?.addEventListener('click', () => {
 
 function applyLanguage(lang) {
   const dict = i18n[lang] || i18n.en;
-  $('txtGovIndia').textContent = dict.govIndia;
-  $('txtMinistry').textContent = dict.ministry;
-  $('txtPortalTitle').textContent = dict.portalTitle;
-  $('txtPortalSub').textContent = dict.portalSub;
-  $('txtStatute').textContent = dict.statute;
-  $('txtSafetyNotice').textContent = dict.safetyNotice;
-  $('navInspect').textContent = dict.navInspect;
-  $('navOverview').textContent = dict.navOverview;
-  $('navEntries').textContent = dict.navEntries;
-  $('navDatabase').textContent = dict.navDatabase;
-  $('navAlerts').textContent = dict.navAlerts;
-  $('navAnalytics').textContent = dict.navAnalytics;
-  $('navHistory').textContent = dict.navHistory;
-  $('navHealth').textContent = dict.navHealth;
-  $('txtInspectHead').textContent = dict.inspectHead;
-  $('txtInspectSub').textContent = dict.inspectSub;
-  $('txtStep1Title').textContent = dict.step1Title;
-  $('txtStep2Title').textContent = dict.step2Title;
-  $('txtStep3Title').textContent = dict.step3Title;
-  $('txtStep4Title').textContent = dict.step4Title;
-  $('txtStep5Title').textContent = dict.step5Title;
+  const setElTxt = (id, txt) => { const el = $(id); if (el) el.textContent = txt; };
+  setElTxt('txtGovIndia', dict.govIndia);
+  setElTxt('txtMinistry', dict.ministry);
+  setElTxt('txtPortalTitle', dict.portalTitle);
+  setElTxt('txtPortalSub', dict.portalSub);
+  setElTxt('txtStatute', dict.statute);
+  setElTxt('txtSafetyNotice', dict.safetyNotice);
+  setElTxt('navInspect', dict.navInspect);
+  setElTxt('navOverview', dict.navOverview);
+  setElTxt('navEntries', dict.navEntries);
+  setElTxt('navDatabase', dict.navDatabase);
+  setElTxt('navAlerts', dict.navAlerts);
+  setElTxt('navAnalytics', dict.navAnalytics);
+  setElTxt('navHistory', dict.navHistory);
+  setElTxt('navHealth', dict.navHealth);
+  setElTxt('txtInspectHead', dict.inspectHead);
+  setElTxt('txtInspectSub', dict.inspectSub);
+  setElTxt('txtStep1Title', dict.step1Title);
+  setElTxt('txtStep2Title', dict.step2Title);
+  setElTxt('txtStep3Title', dict.step3Title);
+  setElTxt('txtStep4Title', dict.step4Title);
+  setElTxt('txtStep5Title', dict.step5Title);
 }
 
 // File Upload Logic

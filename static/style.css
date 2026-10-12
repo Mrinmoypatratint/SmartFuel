@@ -164,6 +164,120 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 .gov-statutory-strip strong { font-weight: 800; }
 
 /* ==========================================================================
+   OFFICIAL GOVERNMENT MARQUEE TICKER (GIGW 3.0 & NIC COMPLIANT)
+   ========================================================================== */
+.gov-marquee-strip {
+  display: flex;
+  align-items: stretch;
+  background: #ffffff;
+  border-top: 1px solid #cbd5e1;
+  border-bottom: 2.5px solid var(--navy-gold, #ffaf00);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  position: relative;
+  z-index: 10;
+}
+
+.gov-marquee-strip.login-marquee {
+  background: #000b33;
+  border-top: 1px solid rgba(255, 175, 0, 0.3);
+  border-bottom: 2.5px solid var(--navy-gold, #ffaf00);
+}
+
+.gov-marquee-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--navy-primary, #04127b);
+  color: #ffffff;
+  padding: 8px 16px;
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.12);
+  z-index: 2;
+}
+
+.gov-marquee-icon {
+  font-size: 0.95rem;
+}
+
+.gov-marquee-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 12px;
+  background: #f8fafc;
+}
+
+.gov-marquee-strip.login-marquee .gov-marquee-content {
+  background: #000b33;
+}
+
+.gov-marquee-ticker {
+  width: 100%;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #1e293b;
+  cursor: pointer;
+}
+
+.gov-marquee-strip.login-marquee .gov-marquee-ticker {
+  color: #f1f5f9;
+}
+
+.gov-marquee-ticker .ticker-item {
+  display: inline-block;
+  padding: 4px 0;
+}
+
+.gov-marquee-ticker .ticker-item strong {
+  color: var(--navy-primary, #04127b);
+  font-weight: 800;
+}
+
+.gov-marquee-strip.login-marquee .gov-marquee-ticker .ticker-item strong {
+  color: var(--navy-gold-light, #ffd72d);
+}
+
+.gov-marquee-ticker .ticker-sep {
+  display: inline-block;
+  color: var(--navy-gold, #ffaf00);
+  font-size: 0.85rem;
+  font-weight: 900;
+  margin: 0 20px;
+}
+
+/* High Contrast Mode */
+body.high-contrast .gov-marquee-strip {
+  background: #000000;
+  border-color: #ffd700;
+}
+body.high-contrast .gov-marquee-label {
+  background: #ffd700;
+  color: #000000;
+}
+body.high-contrast .gov-marquee-content {
+  background: #111111;
+}
+body.high-contrast .gov-marquee-ticker {
+  color: #ffffff;
+}
+
+@media (max-width: 640px) {
+  .gov-marquee-title {
+    display: none;
+  }
+  .gov-marquee-label {
+    padding: 8px 10px;
+  }
+}
+
+/* ==========================================================================
    2. MAIN APPLICATION CONTENT & LAYOUT
    ========================================================================== */
 .gov-content {

@@ -55,12 +55,23 @@
     </div>
   </section>
 
-  <!-- 4. Live Regulatory Directives Ticker Bar -->
-  <div class="navy-ticker-bar">
-    <span class="navy-ticker-label">🔴 LIVE DIRECTIVE</span>
-    <span id="txtTickerMessage" style="color:#f1f5f9;font-weight:600;">
-      Mandatory HSRP ANPR verification & solenoid fuel-lock enforced under Rule 35, Gas Cylinders Rules 2016 and CMVR 1989 Rule 115A across all dispensing islands.
-    </span>
+  <!-- 4. Official Government Marquee Ticker Bar -->
+  <div class="gov-marquee-strip login-marquee" role="region" aria-label="Official Announcements Ticker">
+    <div class="gov-marquee-label">
+      <span class="gov-marquee-icon" aria-hidden="true">📢</span>
+      <span id="txtMarqueeLabel" class="gov-marquee-title">नवीनतम सूचना / LATEST UPDATES</span>
+    </div>
+    <div class="gov-marquee-content">
+      <marquee behavior="scroll" direction="left" scrollamount="6" onmouseover="this.stop();" onmouseout="this.start();" class="gov-marquee-ticker" id="loginMarquee">
+        <span class="ticker-item">🔴 <strong>सांविधिक अधिदेश (Rule 35, Gas Cylinders Rules 2016):</strong> सभी सीएनजी सिलेंडरों का 3 वर्षीय हाइड्रो-परीक्षण प्रमाणन अनिवार्य है। अपरीक्षित सिलेंडरों में गैस भरना सख्त वर्जित है।</span>
+        <span class="ticker-sep" aria-hidden="true">★</span>
+        <span class="ticker-item">⚠️ <strong>MoRTH CMVR 1989 Rule 115A Compliance:</strong> <span id="txtTickerMessage">Mandatory High-Security Registration Plate (HSRP) optical scanning prior to dispenser solenoid actuation across all CGD islands.</span></span>
+        <span class="ticker-sep" aria-hidden="true">★</span>
+        <span class="ticker-item">⚡ <strong>PESO Safety Protocol:</strong> Instant hardware electrical interlock blocks fuel delivery to expired or blacklisted cylinder serials.</span>
+        <span class="ticker-sep" aria-hidden="true">★</span>
+        <span class="ticker-item">📞 <strong>राष्ट्रीय पेट्रोलियम सुरक्षा केंद्र / National Helpline:</strong> 1800-11-2026 (Toll-Free, Operational 24x7).</span>
+      </marquee>
+    </div>
   </div>
 
   <!-- 5. Main 2-Column Split Layout -->

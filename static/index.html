@@ -59,10 +59,25 @@
     <button class="gov-nav-btn" data-page="health"><span>⚙</span> <span id="navHealth">System Health</span></button>
   </nav>
 
-  <!-- 4. Statutory Disclaimer Banner -->
-  <div class="gov-statutory-strip">
-    <strong>STATUTORY SAFETY COMPLIANCE:</strong>
-    <span id="txtSafetyNotice">Under Rule 35, Gas Cylinders Rules 2016 & CMVR 1989. CNG dispensing is strictly prohibited for unendorsed RCs or expired hydrotesting certificates.</span>
+  <!-- 4. Official Statutory Safety Marquee Banner (GIGW 3.0 & NIC Compliant) -->
+  <div class="gov-marquee-strip" role="region" aria-label="Official Statutory Announcements">
+    <div class="gov-marquee-label">
+      <span class="gov-marquee-icon" aria-hidden="true">📢</span>
+      <span id="txtPortalMarqueeLabel" class="gov-marquee-title">सांविधिक सूचना / STATUTORY MANDATE</span>
+    </div>
+    <div class="gov-marquee-content">
+      <marquee behavior="scroll" direction="left" scrollamount="6" onmouseover="this.stop();" onmouseout="this.start();" class="gov-marquee-ticker" id="portalMarquee">
+        <span class="ticker-item">🔴 <strong>Gas Cylinders Rules, 2016 (Rule 35):</strong> <span id="txtSafetyNotice">Periodic hydrostatic testing of CNG onboard cylinders is legally mandatory every 3 years. Dispensing CNG to expired cylinders is strictly prohibited and subject to immediate hardware solenoid shutdown.</span></span>
+        <span class="ticker-sep" aria-hidden="true">★</span>
+        <span class="ticker-item">🛡️ <strong>MoRTH Central Motor Vehicles Rules (CMVR) 1989 - Rule 115A:</strong> Fuel dispensing is permitted strictly to vehicles endorsed with authorized CNG fuel kit on RC book and verified via Neural HSRP ANPR.</span>
+        <span class="ticker-sep" aria-hidden="true">★</span>
+        <span class="ticker-item">⚡ <strong>Automated Hardware Relay Interlock:</strong> Sub-100ms MODBUS electrical relay cut-off switch directly controls dispenser safety solenoid valves.</span>
+        <span class="ticker-sep" aria-hidden="true">★</span>
+        <span class="ticker-item">📜 <strong>PESO Electronic Ledger:</strong> Tamper-evident SHA-256 cryptographic audit logs recorded for every vehicle entry and fueling event.</span>
+        <span class="ticker-sep" aria-hidden="true">★</span>
+        <span class="ticker-item">📞 <strong>National Petroleum Safety Helpline:</strong> 1800-11-2026 (Toll-Free, 24x7 Command Center).</span>
+      </marquee>
+    </div>
   </div>
 
   <!-- 5. Main Application Content Container -->
