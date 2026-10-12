@@ -828,8 +828,230 @@ body.high-contrast .gov-marquee-ticker {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--navy-canvas);
+  background-color: #020b33;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Mukta", "Noto Sans Devanagari", Arial, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Fullscreen Background Auto-Slider */
+.bg-slider-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 1.6s cubic-bezier(0.4, 0, 0.2, 1), transform 9s cubic-bezier(0.25, 1, 0.5, 1);
+  transform: scale(1.05);
+}
+
+.bg-slide.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.bg-slider-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(ellipse at 50% 35%, rgba(4, 18, 123, 0.40) 0%, rgba(2, 8, 38, 0.75) 70%, rgba(1, 4, 20, 0.88) 100%);
+  backdrop-filter: blur(1px);
+}
+
+.portal-page-wrapper {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   PROMINENT STATION VISUAL SHOWCASE CAROUSEL (CLEAR & PROFESSIONAL)
+   ========================================================================== */
+.station-showcase-wrap {
+  position: relative;
+  width: 100%;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  border: 1.5px solid var(--navy-gold, #ffaf00);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  background: #020826;
+}
+
+.showcase-slider {
+  position: relative;
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+}
+
+.showcase-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+  z-index: 1;
+}
+
+.showcase-slide.active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 2;
+}
+
+.showcase-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.showcase-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 16px 12px 16px;
+  background: linear-gradient(to top, rgba(0, 5, 25, 0.94) 0%, rgba(0, 5, 25, 0.65) 60%, transparent 100%);
+  color: #ffffff;
+  z-index: 3;
+}
+
+.showcase-tag {
+  display: inline-block;
+  background: var(--navy-gold, #ffaf00);
+  color: #020b4c;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.showcase-caption strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 2px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.showcase-caption p {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #e2e8f0;
+  line-height: 1.35;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.showcase-controls {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 4;
+}
+
+.showcase-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.showcase-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.showcase-dot:hover {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.showcase-dot.active {
+  background: var(--navy-gold, #ffaf00);
+  transform: scale(1.3);
+  box-shadow: 0 0 6px rgba(255, 175, 0, 0.8);
+}
+
+.showcase-nav-btns {
+  display: flex;
+  gap: 4px;
+}
+
+.showcase-arrow {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(4, 18, 123, 0.75);
+  border: 1px solid var(--navy-gold, #ffaf00);
+  color: #ffffff;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.showcase-arrow:hover {
+  background: var(--navy-gold, #ffaf00);
+  color: #020b4c;
+}
+
+@media (max-width: 640px) {
+  .showcase-slider {
+    height: 190px;
+  }
+  .showcase-caption {
+    padding: 16px 12px 10px 12px;
+  }
+  .showcase-caption strong {
+    font-size: 0.82rem;
+  }
+  .showcase-caption p {
+    font-size: 0.68rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
 /* ==========================================================================
