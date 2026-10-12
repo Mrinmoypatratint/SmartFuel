@@ -15,6 +15,7 @@ from reportlab.pdfgen.canvas import Canvas
 from .database import Base, engine, SessionLocal, User, Vehicle, Cylinder, Inspection, Station, Audit, CameraDevice, LoginFailure, VehicleEvent, RevokedSession, seed_demo, DB_URL, migrate_owner_column
 from .security import create_token, read_token, hash_password, check_password
 from .ocr_engine import ocr_plate, read_image, configure_tesseract
+from .vahan_gateway import resolve_and_cache_vehicle, VAHAN_ENABLED
 
 ROOT=Path(__file__).resolve().parent.parent
 STORE=Path(os.getenv('DATA_DIR',str(ROOT/'storage')))
@@ -96,9 +97,11 @@ def cylinder_state(c):
         return 'expired' if expiry<today else 'valid'
     except (ValueError, TypeError):return 'missing'
 
-def result_for(db,user,plate):
+def result_for(db,user,plate,auto_resolve=True):
     p=plate_norm(plate)
     v=authorized_vehicle(db,user,p)
+    if not v and auto_resolve and VAHAN_ENABLED:
+        v=resolve_and_cache_vehicle(db,user,p)
     if not v:return {'plate':p,'vehicle':None,'status':'not_registered','explanation':'Not in demonstration database','disclaimer':'DEMO DATA — NOT GOVERNMENT VERIFIED'}
     cylinders=[{'id':c.id,'serial':c.serial,'last_test':c.last_test or '', 'expiry':c.expiry or '', 'certificate_ref':c.certificate_ref or '', 'certificate_file':c.certificate_file or '', 'evidence':certificate_evidence(c), 'status':cylinder_state(c)} for c in v.cylinders]
     record={'plate':v.plate,'model':v.model,'owner_name':v.owner_name or '','cng_endorsed':v.cng_endorsed,'notes':v.notes,'station_id':v.station_id,'cylinders':cylinders}
@@ -450,6 +453,15 @@ async def lookup(request:Request,user:User=Depends(require_user),db:Session=Depe
     r=result_for(db,user,p)
     ident=create_inspection(db,user,body.get('recognized_plate',p),p,body.get('confidence',0),'Manual confirmation',r,station_id=body.get('station_id'))
     return {'id':ident,'recognition':{'plate':p,'manual':True,'confidence':0},'result':r}
+
+@app.post('/api/vahan/query')
+async def vahan_query(request:Request,user:User=Depends(require_user),db:Session=Depends(db_session)):
+    """Queries VAHAN gateway, auto-caches the vehicle record, and returns statutory safety status."""
+    permitted(user,('admin','operator'))
+    body=await request.json();p=plate_norm(body.get('plate'))
+    if not PLATE_RE.fullmatch(p):fail(400,'Valid vehicle registration plate required')
+    r=result_for(db,user,p,auto_resolve=True)
+    return {'ok':True,'plate':p,'status':r['status'],'vehicle':r.get('vehicle'),'explanation':r.get('explanation')}
 
 @app.post('/api/scan')
 async def scan(request:Request,user:User=Depends(require_user),db:Session=Depends(db_session)):
