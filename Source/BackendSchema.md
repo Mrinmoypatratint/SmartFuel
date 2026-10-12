@@ -1,16 +1,17 @@
 # Database Architecture & Relational Schema (BackendSchema)
 
-**Project Name:** SmartFuel — National Automated CNG Safety & Compliance Verification System  
+**Project Name:** SmartFuel — Commercial Enterprise CNG Dispensing & Safety Management Automation Platform  
+**Developer & Provider:** SmartFuel Technologies Pvt. Ltd.  
 **Database Engine:** PostgreSQL 16 Enterprise / Relational Architecture with Partitioning  
-**Document Reference:** SF-GOV-DB-2026-V1.0  
-**Status:** Approved for Implementation  
-**Classification:** Official / Restricted  
+**Document Reference:** SF-ENT-DB-2026-V2.0  
+**Status:** Production Deployed (`https://fuel.cscsetu.com`)  
+**Classification:** Proprietary / Commercial B2B  
 
 ---
 
 ## 1. Entity-Relationship (ER) Architecture Overview
 
-The SmartFuel relational schema models regulatory oversight, organizational hierarchy (Ministry -> CGD -> Retail Station -> Dispenser Bay), dual vehicle verification data (MoRTH VAHAN & PESO), live inspection telemetry, hardware interlocks, and an immutable cryptographic audit ledger.
+The SmartFuel relational schema models enterprise organizational hierarchy (Energy Provider / CGD -> Retail Station -> Dispenser Bay), dual vehicle verification data (Vehicle Registration & Cylinder Hydrotest Records), live inspection telemetry, hardware interlocks, and an immutable cryptographic audit ledger.
 
 ```mermaid
 erDiagram
@@ -20,8 +21,8 @@ erDiagram
     MASTER_DISPENSER_BAYS ||--o{ INSPECTION_RECORDS : logs
     SYSTEM_USERS ||--o{ INSPECTION_RECORDS : operates
     
-    VAHAN_RC_REGISTRY ||--o{ PESO_CYLINDER_REGISTRY : links
-    PESO_TESTING_STATIONS ||--o{ PESO_CYLINDER_REGISTRY : certifies
+    VEHICLE_RC_REGISTRY ||--o{ CYLINDER_HYDROTEST_REGISTRY : links
+    ACCREDITED_TESTING_STATIONS ||--o{ CYLINDER_HYDROTEST_REGISTRY : certifies
     
     INSPECTION_RECORDS ||--o| DISPENSER_INTERLOCK_EVENTS : triggers
     INSPECTION_RECORDS ||--o| SUPERVISOR_OVERRIDES : permits
@@ -36,10 +37,10 @@ erDiagram
 ### 2.1 Organizational & Master Hierarchy
 
 ```sql
--- 1. City Gas Distribution (CGD) Authorized Entities (e.g., IGL, MGL, GAIL Gas, IOCL)
+-- 1. City Gas Distribution (CGD) Companies / Fuel Retail Operators
 CREATE TABLE master_cgd_companies (
     id SERIAL PRIMARY KEY,
-    company_code VARCHAR(20) UNIQUE NOT NULL,      -- e.g., 'IGL', 'MGL', 'GAIL_GAS'
+    company_code VARCHAR(20) UNIQUE NOT NULL,      -- e.g., 'IGL', 'MGL', 'GAIL_GAS', 'ATGL'
     company_name VARCHAR(150) NOT NULL,
     cin_number VARCHAR(30) UNIQUE,
     headquarters_city VARCHAR(100) NOT NULL,
@@ -49,13 +50,13 @@ CREATE TABLE master_cgd_companies (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
--- 2. Retail CNG Stations (Licensed by PESO & CGD Entity)
+-- 2. Retail CNG Stations (Operated by CGD Franchises)
 CREATE TABLE master_stations (
     id SERIAL PRIMARY KEY,
     cgd_company_id INT NOT NULL REFERENCES master_cgd_companies(id) ON DELETE RESTRICT,
     station_code VARCHAR(30) UNIQUE NOT NULL,       -- e.g., 'IGL-DL-RO-0104'
     station_name VARCHAR(160) NOT NULL,
-    peso_station_license VARCHAR(60) UNIQUE NOT NULL,-- e.g., 'PESO/DL/CNG/2019/8491'
+    station_license_number VARCHAR(60) UNIQUE NOT NULL, -- e.g., 'LIC/DL/CNG/2019/8491'
     address TEXT NOT NULL,
     city VARCHAR(100) NOT NULL,
     district VARCHAR(100) NOT NULL,
@@ -88,7 +89,7 @@ CREATE TABLE master_dispenser_bays (
 ### 2.2 Role-Based Access Control (RBAC)
 
 ```sql
--- 4. Authorized System Users (Operators, Supervisors, CGD Auditors, Ministry Regulators)
+-- 4. Authorized System Users (Bay Attendants, Supervisors, Station Managers, Corporate Auditors)
 CREATE TABLE system_users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -96,11 +97,11 @@ CREATE TABLE system_users (
     password_hash VARCHAR(255) NOT NULL,
     full_name VARCHAR(120) NOT NULL,
     role VARCHAR(30) NOT NULL CHECK (
-        role IN ('super_admin', 'peso_auditor', 'cgd_admin', 'station_supervisor', 'bay_attendant')
+        role IN ('super_admin', 'safety_auditor', 'corporate_admin', 'station_manager', 'station_supervisor', 'bay_attendant')
     ),
     cgd_company_id INT REFERENCES master_cgd_companies(id) ON DELETE SET NULL,
     station_id INT REFERENCES master_stations(id) ON DELETE SET NULL,
-    aadhaar_masked VARCHAR(12),                     -- e.g., 'XXXX-XXXX-1234'
+    employee_badge_id VARCHAR(30),
     active BOOLEAN DEFAULT TRUE NOT NULL,
     credential_version VARCHAR(32) NOT NULL DEFAULT 'v1',
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -118,32 +119,32 @@ CREATE INDEX idx_revoked_expiry ON revoked_sessions (expires_at);
 
 ---
 
-### 2.3 Regulatory Registries (MoRTH VAHAN & PESO Hydrotest)
+### 2.3 Compliance & Safety Registries
 
 ```sql
--- 6. MoRTH VAHAN 4.0 Vehicle RC Registry (National Mirror / Cache)
-CREATE TABLE vahan_rc_registry (
+-- 6. Vehicle Registration & Fuel Endorsement Records
+CREATE TABLE vehicle_rc_registry (
     plate_number VARCHAR(16) PRIMARY KEY,           -- e.g., 'DL01AB1234', '22BH1234AA'
     chassis_number VARCHAR(30) NOT NULL,            -- Encrypted at application layer
     engine_number VARCHAR(30) NOT NULL,
     make_model VARCHAR(120) NOT NULL,               -- e.g., 'Maruti Suzuki WagonR LXi CNG'
     vehicle_class VARCHAR(40) NOT NULL,             -- 'LMV', 'Three Wheeler (Auto)', 'Bus'
     fuel_type VARCHAR(30) NOT NULL,                 -- Must be 'CNG', 'PETROL/CNG', 'DIESEL/CNG'
-    cng_endorsed BOOLEAN NOT NULL DEFAULT FALSE,    -- Official MoRTH endorsement flag
+    cng_endorsed BOOLEAN NOT NULL DEFAULT FALSE,    -- Official fuel endorsement flag
     cng_endorsement_date DATE,
     rc_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',-- 'ACTIVE', 'SUSPENDED', 'CANCELLED', 'STOLEN'
-    owner_masked VARCHAR(60) DEFAULT '',            -- e.g., 'R*** K***' (DPDP compliant)
+    owner_masked VARCHAR(60) DEFAULT '',            -- e.g., 'R*** K***' (Data privacy compliant)
     state_code VARCHAR(2) NOT NULL,
     is_blacklisted BOOLEAN DEFAULT FALSE NOT NULL,
     blacklist_reason VARCHAR(255),
-    last_sync_with_vahan TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+    last_sync_timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
-CREATE INDEX idx_vahan_cng_status ON vahan_rc_registry (cng_endorsed, rc_status);
+CREATE INDEX idx_vehicle_cng_status ON vehicle_rc_registry (cng_endorsed, rc_status);
 
--- 7. PESO Accredited Testing Stations (Authorized Cylinder Testing Facilities)
-CREATE TABLE peso_testing_stations (
+-- 7. Accredited Hydrotest Testing Stations
+CREATE TABLE accredited_testing_stations (
     id SERIAL PRIMARY KEY,
-    peso_license_number VARCHAR(60) UNIQUE NOT NULL,-- e.g., 'PESO/HQ/CYL/TEST/2021/119'
+    testing_license_number VARCHAR(60) UNIQUE NOT NULL, -- e.g., 'TS/HQ/CYL/TEST/2021/119'
     facility_name VARCHAR(160) NOT NULL,
     address TEXT NOT NULL,
     district VARCHAR(100) NOT NULL,
@@ -153,25 +154,25 @@ CREATE TABLE peso_testing_stations (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
--- 8. PESO Central Cylinder Hydrotest Registry (Rule 35, Gas Cylinders Rules 2016)
-CREATE TABLE peso_cylinder_registry (
+-- 8. Cylinder Hydrostatic Test Registry (Rule 35, Gas Cylinders Rules 2016)
+CREATE TABLE cylinder_hydrotest_registry (
     id SERIAL PRIMARY KEY,
     cylinder_serial_number VARCHAR(80) NOT NULL,    -- Stamped cylinder serial
-    plate_number VARCHAR(16) NOT NULL REFERENCES vahan_rc_registry(plate_number) ON DELETE CASCADE,
+    plate_number VARCHAR(16) NOT NULL REFERENCES vehicle_rc_registry(plate_number) ON DELETE CASCADE,
     manufacturer_name VARCHAR(120) NOT NULL,        -- e.g., 'EKC', 'Rama Cylinders', 'Confidence'
     water_capacity_liters DECIMAL(5, 2) NOT NULL,   -- e.g., 60.00 Liters
     working_pressure_bar INT DEFAULT 200 NOT NULL,
     test_pressure_bar INT DEFAULT 300 NOT NULL,
     last_hydrotest_date DATE NOT NULL,              -- Date of physical stretch test
     hydrotest_expiry_date DATE NOT NULL,           -- Exactly 3 years from last test
-    test_certificate_number VARCHAR(100) NOT NULL,  -- Statutory certificate number
-    testing_station_id INT NOT NULL REFERENCES peso_testing_stations(id),
+    test_certificate_number VARCHAR(100) NOT NULL,  -- Accredited test certificate number
+    testing_station_id INT NOT NULL REFERENCES accredited_testing_stations(id),
     status VARCHAR(20) NOT NULL DEFAULT 'VALID',    -- 'VALID', 'EXPIRED', 'CONDEMNED', 'SUSPECT'
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     CONSTRAINT uq_cylinder_plate_serial UNIQUE (plate_number, cylinder_serial_number)
 );
-CREATE INDEX idx_cylinder_plate ON peso_cylinder_registry (plate_number);
-CREATE INDEX idx_cylinder_expiry ON peso_cylinder_registry (hydrotest_expiry_date);
+CREATE INDEX idx_cylinder_plate ON cylinder_hydrotest_registry (plate_number);
+CREATE INDEX idx_cylinder_expiry ON cylinder_hydrotest_registry (hydrotest_expiry_date);
 ```
 
 ---
@@ -189,8 +190,8 @@ CREATE TABLE inspection_records (
     confirmed_plate VARCHAR(16) NOT NULL,
     ocr_confidence DECIMAL(5, 2) NOT NULL,          -- e.g., 96.40%
     capture_method VARCHAR(40) NOT NULL,            -- 'automatic_anpr_camera', 'manual_plate_entry'
-    vahan_rc_status VARCHAR(20) NOT NULL,           -- 'PASS', 'FAIL', 'NOT_FOUND'
-    peso_hydrotest_status VARCHAR(20) NOT NULL,     -- 'PASS', 'EXPIRED', 'MISSING_CERT'
+    vehicle_rc_status VARCHAR(20) NOT NULL,         -- 'PASS', 'FAIL', 'NOT_FOUND'
+    cylinder_hydrotest_status VARCHAR(20) NOT NULL, -- 'PASS', 'EXPIRED', 'MISSING_CERT'
     final_decision VARCHAR(20) NOT NULL,           -- 'APPROVED', 'HOLD', 'REVIEW'
     decision_reason TEXT NOT NULL,
     snapshot_storage_path VARCHAR(255),             -- S3 / MinIO object key
@@ -227,11 +228,11 @@ CREATE TABLE supervisor_overrides (
     scanned_at TIMESTAMPTZ NOT NULL,
     supervisor_id INT NOT NULL REFERENCES system_users(id),
     reason_code VARCHAR(40) NOT NULL CHECK (
-        reason_code IN ('OFFLINE_PHYSICAL_CERT_VERIFIED', 'EMERGENCY_AMBULANCE_CLEARANCE', 'PORTAL_SYNC_DELAY')
+        reason_code IN ('OFFLINE_PHYSICAL_CERT_VERIFIED', 'EMERGENCY_VEHICLE_CLEARANCE', 'DATABASE_SYNC_DELAY')
     ),
     justification TEXT NOT NULL,
     physical_certificate_upload_path VARCHAR(255),
-    supervisor_otp_aadhaar_ref VARCHAR(64) NOT NULL,
+    supervisor_auth_ref VARCHAR(64) NOT NULL,
     approved_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 ```
@@ -248,7 +249,7 @@ CREATE TABLE audit_trail_ledger (
     actor_id INT REFERENCES system_users(id),
     actor_ip VARCHAR(45) NOT NULL,
     action_code VARCHAR(80) NOT NULL,               -- e.g., 'INSPECTION_DECISION', 'SUPERVISOR_OVERRIDE'
-    subject_entity VARCHAR(80) NOT NULL,            -- e.g., 'plate:DL01AB1234', 'user:admin@igl.in'
+    subject_entity VARCHAR(80) NOT NULL,            -- e.g., 'plate:DL01AB1234', 'user:admin@smartfuel.in'
     event_details JSONB NOT NULL,
     previous_record_hash VARCHAR(64) NOT NULL,      -- SHA-256 hash of previous row
     current_record_hash VARCHAR(64) NOT NULL        -- SHA-256(prev_hash || timestamp || action || payload)
@@ -258,11 +259,11 @@ CREATE INDEX idx_audit_happened ON audit_trail_ledger (happened_at DESC);
 
 ---
 
-## 3. Data Retention & Regulatory Archival Strategy
+## 3. Data Retention & Archival Strategy
 
-| Data Category | Operational Hot Tier | Cold Archive Tier | Statutory Retention Period |
+| Data Category | Operational Hot Tier | Cold Archive Tier | Retention Period |
 | :--- | :--- | :--- | :--- |
-| **Inspection Telemetry** | 90 Days in PostgreSQL NVMe | S3 Glacier Deep Archive (CSV/Parquet) | 5 Years (PESO Audit Mandate) |
-| **Camera Ingress Images** | 30 Days in Fast Object Storage | Compressed JPEG (80% quality) in S3 | 1 Year (Law Enforcement Mandate) |
-| **Audit Ledger & Overrides** | Permanent Hot Storage | Replicated to Write-Once-Read-Many (WORM) | Indefinite (Non-expiring legal record) |
-| **Cylinder Test Records** | Active until cylinder re-tested | Preserved in Historical Ledger | 15 Years (Full lifecycle of cylinder) |
+| **Inspection Telemetry** | 90 Days in PostgreSQL NVMe | S3 Glacier Deep Archive (CSV/Parquet) | 5 Years (Safety Audit Mandate) |
+| **Camera Ingress Images** | 30 Days in Fast Object Storage | Compressed JPEG (80% quality) in S3 | 1 Year (Forecourt Incident Review) |
+| **Audit Ledger & Overrides** | Permanent Hot Storage | Replicated to Write-Once-Read-Many (WORM) | Indefinite (Immutable Legal Record) |
+| **Cylinder Test Records** | Active until cylinder re-tested | Preserved in Historical Ledger | 15 Years (Full Lifecycle of Cylinder) |

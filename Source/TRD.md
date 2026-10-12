@@ -1,10 +1,11 @@
 # Technical Requirements Document (TRD)
 
-**Project Name:** SmartFuel — National Automated CNG Safety & Compliance Verification System  
-**System Architecture:** Edge-Cloud Hybrid with Hardware Interlock  
-**Document Reference:** SF-GOV-TRD-2026-V1.0  
-**Status:** Approved for Engineering Architecture  
-**Classification:** Official / Restricted  
+**Project Name:** SmartFuel — Commercial Enterprise CNG Dispensing & Safety Management Automation Platform  
+**Developer & Provider:** SmartFuel Technologies Pvt. Ltd.  
+**System Architecture:** Edge-Cloud Hybrid with Hardware Interlock & Traefik Dynamic Ingress  
+**Document Reference:** SF-ENT-TRD-2026-V2.0  
+**Status:** Production Deployed (`https://fuel.cscsetu.com`)  
+**Classification:** Proprietary / Commercial B2B  
 
 ---
 
@@ -16,8 +17,8 @@ The SmartFuel platform is engineered as an **Edge-Cloud Hybrid System** designed
 +----------------------------------------------------------------------------------------------------+
 |                                    STATION EDGE SUBSYSTEM                                          |
 |                                                                                                    |
-|  [IP Camera (RTSP)]  --->  [Station Edge Gateway]  --->  [Display Monitor (/cng-display)]         |
-|  (2-4 MP / WDR / IR)       - Plate Detection (YOLO)      - Full-Screen Status Board                |
+|  [IP Camera (RTSP)]  --->  [Station Edge Gateway]  --->  [Forecourt Display (/cng-display)]        |
+|  (2-4 MP / WDR / IR)       - Plate Detection (YOLO)      - High-Contrast Status Board              |
 |                            - OCR (Tesseract / Engine)                                              |
 |                            - Local SQLite / Cache        [Dispenser Safety Interlock]              |
 |                            - Relay Controller (MODBUS) -> - 24V Solenoid Power Cut Relay           |
@@ -27,44 +28,88 @@ The SmartFuel platform is engineered as an **Edge-Cloud Hybrid System** designed
                      REST / WebSocket |                   |  Config Updates
                                       v                   |
 +----------------------------------------------------------------------------------------------------+
-|                                 CENTRAL CLOUD PLATFORM TIER                                        |
+|                             CENTRAL CLOUD PLATFORM TIER (LIVE PRODUCTION)                          |
 |                                                                                                    |
-|  [Reverse Proxy & TLS]  --->  [API Application Server]  --->  [Data & Cache Layer]                 |
-|  - Caddy / Nginx              - FastAPI (Python 3.12)          - PostgreSQL 16 (Relational DB)     |
-|  - Strict TLS 1.3             - Async ASGI / Uvicorn           - Redis 7 (Cache & PubSub)          |
-|  - CERT-In Hardened           - Rules & Compliance Engine      - Encrypted Object Store            |
+|  [Reverse Proxy & Ingress] ---> [ASGI Application Server] ---> [Data & Cache Layer]                 |
+|  - Traefik 3.x Proxy           - FastAPI (Python 3.12)         - PostgreSQL 16 (Relational DB)     |
+|  - Dynamic Route Configuration - Systemd Managed Daemon        - Redis 7 (Cache & PubSub)          |
+|  - Let's Encrypt TLS 1.3       - Port 8765 Loopback            - Synthetic Compliance Store        |
+|  - Zero Multi-Host Disruption  - Rules & Compliance Engine     - Tamper-Evident Audit Ledger       |
 +----------------------------------------------------------------------------------------------------+
                                       |
                                       v
 +----------------------------------------------------------------------------------------------------+
-|                                EXTERNAL GOVERNMENT GATEWAYS                                        |
+|                       ENTERPRISE VERIFICATION & TELEMETRY ADAPTERS                                 |
 |                                                                                                    |
-|  [MoRTH VAHAN 4.0 Gateway]                         [PESO National Cylinder Registry]               |
-|  - RC Status & Fuel Endorsement                    - Cylinder Serials & Hydrotest Expiries         |
-|  - Secured VPN / NIC Bharat Interface              - Accredited Testing Station License Status     |
+|  [Authorized Vehicle Record Adapter]              [Hydrotest Agency Federation Registry]           |
+|  - Fuel Endorsement & RC Status Verification       - Cylinder Serial Numbers & Hydrotest Expiries  |
+|  - High-Speed REST / mTLS Enterprise Gateway      - Testing Center Accreditations                  |
+|  - Sub-800ms SLA with Local Cache Fallback        - Synthetic Resiliency Engine for Standalone Demo|
 +----------------------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 2. Technology Stack & Framework Specifications
+## 2. Production Deployment & Live Infrastructure Specifications
+
+The central platform is deployed in active production at `https://fuel.cscsetu.com`.
+
+### 2.1 Live Production Environment Architecture
+* **Production Host:** Ubuntu 24.04 LTS VPS (`187.126.118.87`).
+* **Reverse Proxy:** Dockerized Traefik 3.x with dynamic configuration located at `/docker/traefik/dynamic/fuel.yml`.
+* **Application Daemon:** Dedicated systemd service `smartfuel.service` running as the `deploy` user in `/opt/apps/fuel`.
+* **Process Manager:** Python 3.12 venv with Uvicorn ASGI server binding to loopback `127.0.0.1:8765`.
+* **SSL/TLS Certificate:** Automated Let's Encrypt ACME TLS 1.3 issuance managed seamlessly by Traefik.
+* **Co-Existence & Multi-Tenant Isolation:** Guaranteed zero disruption to co-hosted production domains:
+  - `cscsetu.com` running on Apache (port 8080).
+  - `services.cscsetu.com` running in Docker container (port 3000).
+
+```yaml
+# Traefik Dynamic Router Configuration (/docker/traefik/dynamic/fuel.yml)
+http:
+  routers:
+    smartfuel-secure:
+      rule: "Host(`fuel.cscsetu.com`)"
+      entryPoints:
+        - websecure
+      service: smartfuel-service
+      tls:
+        certResolver: letsencrypt
+    smartfuel-http:
+      rule: "Host(`fuel.cscsetu.com`)"
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+      service: smartfuel-service
+
+  services:
+    smartfuel-service:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:8765"
+```
+
+---
+
+## 3. Technology Stack & Framework Specifications
 
 | Tier | Component / Technology | Version / Standard | Technical Rationale & Function |
 | :--- | :--- | :--- | :--- |
 | **Edge Hardware** | Industrial Edge Mini-PC | Fanless, x86_64, Intel i5/i7 or ARM RK3588 | High MTBF, 24/7 operating range (-10°C to 60°C), dual Gigabit LAN, RS-485 / GPIO. |
 | **Edge Vision** | OpenCV + Tesseract / PaddleOCR | OpenCV 4.10+, Tesseract 5.4+ | Low-power on-device plate localization, deskewing, and character recognition. |
-| **Web Server / Proxy** | Caddy Server / Nginx | Caddy 2.8+ / Nginx 1.26+ | Automatic TLS 1.3 issuance, HTTP/2 & HTTP/3, reverse proxying, strict security headers. |
+| **Reverse Proxy** | Traefik Dynamic Proxy | Traefik 3.1+ | Automatic Let's Encrypt TLS 1.3 issuance, HTTP/2, dynamic file-based routing without restart. |
 | **Backend Services** | Python / FastAPI | Python 3.12+, FastAPI 0.115+ | High-throughput asynchronous ASGI web framework; native typing with Pydantic v2. |
 | **Relational Database** | PostgreSQL Server | PostgreSQL 16.3+ | ACID compliance, JSONB support, row-level locking, robust indexing (B-Tree & GiST). |
 | **In-Memory Cache** | Redis | Redis 7.2+ | Sub-millisecond session state caching, rate limiting, and real-time Pub/Sub broker. |
-| **Object Storage** | MinIO / S3 Encrypted Storage | S3 API Compliant | AES-256 encrypted storage of vehicle entry snapshots and generated PDF certificates. |
-| **Frontend UI** | Semantic HTML5, Vanilla CSS, JS | ECMAScript 2023 | Zero bloated dependencies; instantaneous rendering; full GIGW 3.0 & WCAG 2.1 AA compliance. |
+| **Frontend UI Engine** | Semantic HTML5, CSS3, Vanilla JS | Modern ES2023 | Lightweight, responsive, zero-framework overhead; includes auto-sliding carousels and ticker. |
+| **Hardware Controller**| MODBUS RTU / TCP Relay | pymodbus 3.6+ / RS-485 | Sub-100ms cut-off signal to dispenser solenoid valves. |
 
 ---
 
-## 3. Hardware & Network Specifications
+## 4. Hardware & Network Specifications
 
-### 3.1 ANPR Ingress Camera Requirements
+### 4.1 ANPR Ingress Camera Requirements
 - **Resolution:** 2MP (1920×1080) minimum, 4MP (2560×1440) recommended.
 - **Sensor:** 1/2.8" or 1/1.8" Progressive Scan CMOS with Wide Dynamic Range ($\ge 120\text{ dB WDR}$) to prevent headlight wash-out at night.
 - **Lens:** Motorized varifocal (5.3 mm – 64 mm) with auto-focus, calibrated for vehicle approach distance (3 m to 10 m).
@@ -72,22 +117,22 @@ The SmartFuel platform is engineered as an **Edge-Cloud Hybrid System** designed
 - **Ingress Protection:** IP67 environmental rating, IK10 vandal resistance, operating temperature up to 60°C.
 - **Interface:** 10/100 Mbps RJ45 PoE (Power over Ethernet IEEE 802.3af/at), ONVIF Profile S/G compliant, RTSP output.
 
-### 3.2 Dispenser Safety Interlock Subsystem
+### 4.2 Dispenser Safety Interlock Subsystem
 - **Mechanism:** Solid State Relay (SSR) or Industrial DIN-rail Relay Module controlled via Station Edge PC GPIO or MODBUS RTU over RS-485.
 - **Relay Rating:** 24V DC / 230V AC, 10A, optically isolated (isolation voltage $\ge 2,500\text{ V RMS}$).
 - **Fail-Safe Logic:** Default-De-energized (Normally Open). The electrical circuit supplying the CNG dispenser dispensing solenoid is **CUT (LOCKED)** until the SmartFuel Edge controller asserts an active, verified `APPROVED` signal.
 - **Heartbeat & Safety Trip:** If the Edge PC reboots, crashes, or loses power, the relay immediately opens (dispenser locks).
 
-### 3.3 Attendant & Island Displays
+### 4.3 Attendant & Island Displays
 - **Panel:** 21.5" or 24" High-Brightness Industrial TFT Monitor (Daylight readable $\ge 1,000\text{ nits}$).
 - **Housing:** IP65 weatherproof enclosure with anti-glare toughened glass.
-- **Connectivity:** HDMI over CAT6 extender or direct Edge PC video output.
+- **Connectivity:** HDMI over CAT6 extender or direct Edge PC video output displaying `/cng-display`.
 
 ---
 
-## 4. Subsystem Interactions & Interface Protocols
+## 5. Subsystem Interactions & Interface Protocols
 
-### 4.1 Ingress Detection & OCR Processing Pipeline
+### 5.1 Ingress Detection & OCR Processing Pipeline
 
 ```
 [Vehicle Approaches Bay]
@@ -114,7 +159,7 @@ The SmartFuel platform is engineered as an **Edge-Cloud Hybrid System** designed
                          [Confidence Scoring & Verification Request]
 ```
 
-### 4.2 Edge Plate Normalization Rules
+### 5.2 Edge Plate Normalization Rules
 ```python
 def normalize_indian_plate(raw_string: str) -> str:
     """
@@ -142,9 +187,9 @@ def normalize_indian_plate(raw_string: str) -> str:
 
 ---
 
-## 5. API Interface Contracts & Protocol Specifications
+## 6. API Interface Contracts & Protocol Specifications
 
-### 5.1 Vehicle Ingress Scan Ingestion API
+### 6.1 Vehicle Ingress Scan Ingestion API
 - **Endpoint:** `POST /api/v1/edge/scan`
 - **Security:** Mutual TLS (mTLS) or `X-Device-Token` with SHA-256 HMAC signature.
 
@@ -173,13 +218,13 @@ def normalize_indian_plate(raw_string: str) -> str:
   "interlock_command": "UNLOCK_SOLENOID",
   "interlock_duration_seconds": 600,
   "checks": {
-    "vahan_rc": {
+    "vehicle_rc": {
       "status": "PASS",
       "fuel_type": "CNG",
       "owner_masked": "R*** K***",
       "endorsement_date": "2023-04-10"
     },
-    "peso_hydrotest": {
+    "cylinder_hydrotest": {
       "status": "PASS",
       "cylinders_installed": 1,
       "cylinders_valid": 1,
@@ -189,7 +234,7 @@ def normalize_indian_plate(raw_string: str) -> str:
           "cylinder_serial": "CYL-DL-98214",
           "last_test": "2024-04-09",
           "expiry": "2027-04-08",
-          "testing_station_peso_id": "PESO/DL/TEST/042",
+          "testing_station_id": "TS-DL-042",
           "status": "VALID"
         }
       ]
@@ -199,46 +244,48 @@ def normalize_indian_plate(raw_string: str) -> str:
 }
 ```
 
-### 5.2 Island Decision Display Feed (Real-Time SSE)
+### 6.2 Forecourt Decision Display Feed (Real-Time SSE)
 - **Endpoint:** `GET /api/v1/cng-display/stream?station_id=104&bay_number=2`
 - **Protocol:** Server-Sent Events (SSE) / WebSocket
-- **Payload:** Broadcasts immediate inspection outcomes with low overhead.
+- **Payload:** Broadcasts immediate inspection outcomes with ultra-low latency.
 
 ---
 
-## 6. Government Gateway Adapter Architecture
+## 7. Enterprise Verification & Compliance Data Adapter Architecture
 
-### 6.1 MoRTH VAHAN 4.0 Integration Gateway
-- **Interface:** REST over National Knowledge Network (NKN) / Secure VPN.
-- **Authentication:** OAuth 2.0 Mutual mTLS with Digital Signature (PKI X.509).
-- **Fallback Policy:** If the VAHAN gateway times out (> 800 ms), the system queries the local cache. If unrecorded in local cache, vehicle is assigned `UNDER REVIEW`.
+### 7.1 Authorized Vehicle Record Adapter
+- **Interface:** REST over high-speed HTTPS / Mutual TLS.
+- **Authentication:** OAuth 2.0 Bearer token with HMAC request signing.
+- **Validation Rules:** Verifies that the vehicle's registered fuel type contains `CNG` and registration status is active.
+- **Fallback Policy:** If upstream verification times out (> 800 ms), the system falls back to the station's local cache. Uncached vehicles are safely flagged as `UNDER REVIEW`.
 
-### 6.2 PESO Central Cylinder Registry Gateway
-- **Interface:** XML/JSON Web Service hosted by NIC for PESO.
-- **Payload Verification:** Validates Cylinder Water Capacity (Liters), Working Pressure (200 bar), Test Pressure (300 bar), and Accredited Testing Agency License ID.
+### 7.2 Hydrotest Agency Federation Registry
+- **Interface:** REST / JSON Web Services connecting accredited cylinder testing agencies.
+- **Payload Verification:** Validates Cylinder Water Capacity (Liters), Working Pressure (200–250 bar), Test Pressure (300 bar), and Accredited Testing Agency License ID.
+- **Synthetic Resiliency Engine:** When operating in standalone pilot or demonstration mode, the platform utilizes high-fidelity synthetic compliance records covering all statutory scenarios (valid, expired, missing, blacklisted).
 
 ---
 
-## 7. Security, Cryptography & CERT-In Guidelines
+## 8. Security, Cryptography & Enterprise Data Protection
 
-### 7.1 Data Protection & Privacy (DPDP Act 2023)
-- **Data at Rest:** AES-256-GCM encryption for all sensitive fields in PostgreSQL (chassis numbers, owner identifiers, operator credentials).
+### 8.1 Data Protection & Privacy Compliance
+- **Data at Rest:** AES-256-GCM encryption for sensitive fields in the database (chassis numbers, owner identifiers, supervisor credentials).
 - **Data in Transit:** Enforce TLS 1.3 with forward secrecy (`TLS_AES_256_GCM_SHA384`, `TLS_CHACHA20_POLY1305_SHA256`).
-- **Data Minimization:** Station island monitors show only the masked registration number (`DL**DE****`), compliance state, and reason.
+- **Data Minimization:** Forecourt island monitors show only masked registration numbers (`DL**DE****`), compliance state, and safety reasons.
 
-### 7.2 Tamper-Evident Audit Ledger (Cryptographic Hash Chaining)
-Every administrative event, manual override, and safety trip generates a ledger entry containing:
+### 8.2 Tamper-Evident Audit Ledger (Cryptographic Hash Chaining)
+Every administrative event, manual supervisor override, and safety trip generates a ledger entry containing:
 $$H_n = \text{SHA-256}(H_{n-1} \parallel \text{Timestamp} \parallel \text{ActorID} \parallel \text{Action} \parallel \text{Payload})$$
 Any retroactive modification of audit records invalidates the cryptographic hash chain, immediately alerting central security auditors.
 
 ---
 
-## 8. Deployment, High Availability & Scalability Sizing
+## 9. Deployment, High Availability & Scalability Sizing
 
 | Metric | Sizing Specification | Architectural Strategy |
 | :--- | :--- | :--- |
 | **National Stations** | 6,500+ CGD Stations | Edge compute at stations; centralized analytics. |
-| **Concurrent Requests** | 3,000 requests/second peak | FastAPI asynchronous workers behind Caddy / Nginx. |
-| **Database Transactions** | ~20 million inspections/month | PostgreSQL partition tables by month (`partition by range(scanned_at)`). |
+| **Concurrent Requests** | 3,000 requests/second peak | FastAPI asynchronous workers behind Traefik reverse proxy. |
+| **Database Transactions**| ~20 million inspections/month | PostgreSQL partition tables by month (`partition by range(scanned_at)`). |
 | **Edge Storage** | 128 GB SSD per Station Edge PC | Stores 90 days of local telemetry and low-res JPEG evidence. |
-| **Cloud Object Storage**| ~40 TB per annum | Tiered S3 storage; lifecycle policy moves to Glacier after 365 days. |
+| **Cloud Object Storage** | ~40 TB per annum | Tiered S3 storage; lifecycle policy moves to Glacier after 365 days. |
