@@ -691,339 +691,575 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 }
 
 /* ==========================================================================
-   OFFICIAL GOVERNMENT LOGIN PORTAL STYLING (GIGW 3.0 COMPLIANT)
+   INDIAN NAVY PORTAL THEME & STRUCTURE (joinindiannavy.gov.in / C-DAC Spec)
    ========================================================================== */
-.gov-login-page {
+:root {
+  --navy-primary: #04127b;        /* Admiralty Navy Blue */
+  --navy-dark: #020b4c;           /* Deep Naval Midnight */
+  --navy-darker: #000b33;         /* Deep Ocean Abyss */
+  --navy-gold: #ffaf00;           /* Indian Navy Gilt Gold */
+  --navy-gold-light: #ffd72d;     /* Bright Naval Brass */
+  --navy-gold-soft: #fff8e1;      /* Soft Gold Wash */
+  --navy-gold-border: #e0a000;    /* Solid Gold Border */
+  --navy-canvas: #f4f6fa;         /* Crisp Naval Canvas */
+  --navy-card: #ffffff;           /* Deck White */
+  --navy-border: #cbd5e1;         /* Steel Gray Border */
+  --navy-text: #0f172a;           /* Deep Charcoal Text */
+  --navy-text-muted: #475569;     /* Naval Slate Gray */
+  --navy-red: #b91c1c;            /* Alert Crimson */
+  --navy-green: #15803d;          /* Fleet Green */
+}
+
+.navy-login-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: var(--gov-bg);
+  background-color: var(--navy-canvas);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Mukta", "Noto Sans Devanagari", Arial, sans-serif;
 }
 
-.gov-login-main {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 20px;
-}
-
-.gov-login-wrapper {
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.gov-login-grid {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  background: var(--gov-card);
-  border: 1px solid var(--gov-border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(12, 35, 64, 0.08);
-  overflow: hidden;
-}
-
-/* Left Column: Institutional Portal Information */
-.gov-login-info {
-  background: linear-gradient(180deg, var(--gov-navy-dark) 0%, var(--gov-navy-primary) 100%);
+/* Indian Navy Header Masthead */
+.navy-masthead {
+  background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy-primary) 100%);
   color: #ffffff;
-  padding: 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  border-right: 3px solid var(--gov-saffron);
+  border-bottom: 3.5px solid var(--navy-gold);
+  box-shadow: 0 4px 12px rgba(2, 11, 76, 0.2);
 }
 
-.gov-login-info-brand {
+.navy-masthead-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.navy-brand-wrap {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 18px;
 }
 
-.gov-login-info-brand img {
-  width: 68px;
-  height: 68px;
+.navy-crest-img {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
+  border: 2.5px solid var(--navy-gold);
   background: #ffffff;
-  padding: 3px;
-  border: 2px solid var(--gov-saffron-bright);
+  padding: 2px;
+  box-shadow: 0 0 10px rgba(255, 175, 0, 0.4);
+  object-fit: contain;
 }
 
-.gov-login-info-brand h2 {
-  font-size: 1.4rem;
+.navy-titles h2 {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--navy-gold-light);
+  margin: 0 0 2px 0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.navy-titles h1 {
+  font-size: 1.45rem;
   font-weight: 900;
   color: #ffffff;
-  margin: 0 0 4px 0;
+  margin: 0 0 2px 0;
   letter-spacing: -0.01em;
 }
 
-.gov-login-info-brand p {
-  font-size: 0.8rem;
-  color: var(--gov-saffron-soft);
+.navy-titles p {
+  font-size: 0.78rem;
+  color: #e2e8f0;
   margin: 0;
   font-weight: 600;
+}
+
+.navy-motto-badge {
+  text-align: right;
+  border-left: 2px solid rgba(255, 175, 0, 0.4);
+  padding-left: 16px;
+}
+
+.navy-motto-hindi {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--navy-gold);
+  display: block;
+  letter-spacing: 0.02em;
+}
+
+.navy-motto-sub {
+  font-size: 0.72rem;
+  color: #cbd5e1;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  font-weight: 700;
 }
 
-.gov-login-info-desc {
-  font-size: 0.86rem;
-  line-height: 1.6;
-  color: #e2e8f0;
-  margin-bottom: 28px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.gov-login-features {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 28px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.gov-login-features li {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 0.82rem;
-  color: #f1f5f9;
-}
-
-.gov-feature-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+/* Naval Ticker / Live Fleet Strip */
+.navy-ticker-bar {
+  background: #000b33;
+  color: #ffffff;
+  padding: 8px 24px;
+  font-size: 0.76rem;
+  border-bottom: 1px solid rgba(255, 175, 0, 0.3);
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 0.85rem;
+  gap: 12px;
+}
+
+.navy-ticker-label {
+  background: var(--navy-red);
+  color: #ffffff;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   flex-shrink: 0;
 }
 
-.gov-feature-text strong {
-  display: block;
+/* Main Indian Navy Portal Grid */
+.navy-login-main {
+  flex: 1;
+  padding: 36px 20px;
+  max-width: 1300px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.navy-grid-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 28px;
+  align-items: start;
+}
+
+/* Left Card: Directives & Instructions (Indian Navy Style) */
+.navy-notice-card {
+  background: #ffffff;
+  border: 1px solid var(--navy-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(4, 18, 123, 0.07);
+  overflow: hidden;
+}
+
+.navy-card-header {
+  background: var(--navy-primary);
   color: #ffffff;
-  font-size: 0.84rem;
+  padding: 14px 20px;
+  border-bottom: 3px solid var(--navy-gold);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navy-card-header h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.navy-card-body {
+  padding: 22px;
+}
+
+.navy-mandate-banner {
+  background: var(--navy-gold-soft);
+  border-left: 4px solid var(--navy-gold);
+  padding: 12px 16px;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 20px;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: #78350f;
+}
+
+.navy-mandate-banner strong {
+  color: #451a03;
+  display: block;
   margin-bottom: 2px;
 }
 
-.gov-feature-text span {
-  color: #cbd5e1;
-  font-size: 0.76rem;
+.navy-directives-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.gov-login-info-footer {
-  margin-top: auto;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
-  font-size: 0.74rem;
-  color: #94a3b8;
+.navy-directive-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--navy-border);
+}
+
+.navy-directive-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.navy-anchor-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: var(--navy-primary);
+  color: var(--navy-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+  border: 1px solid var(--navy-gold);
+}
+
+.navy-directive-text strong {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--navy-primary);
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.navy-directive-text p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--navy-text-muted);
+  line-height: 1.45;
+}
+
+.navy-helpdesk-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 14px 18px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 0.78rem;
 }
 
-/* Right Column: Authentication Panel */
-.gov-login-panel {
-  padding: 40px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--gov-card);
+.navy-helpdesk-box strong {
+  color: var(--navy-primary);
+  font-weight: 800;
 }
 
-.gov-login-panel-header {
-  margin-bottom: 24px;
+/* Right Card: Officer Authentication Box */
+.navy-auth-card {
+  background: #ffffff;
+  border: 1px solid var(--navy-border);
+  border-top: 4px solid var(--navy-gold);
+  border-radius: 6px;
+  box-shadow: 0 6px 18px rgba(4, 18, 123, 0.09);
+  overflow: hidden;
 }
 
-.gov-badge-official {
+.navy-auth-header {
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--navy-border);
+  text-align: center;
+}
+
+.navy-auth-crest-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: var(--gov-saffron-soft);
-  color: var(--gov-saffron);
-  border: 1px solid #fde68a;
-  border-radius: var(--radius-sm);
-  padding: 3px 8px;
-  font-size: 0.7rem;
+  gap: 8px;
+  background: var(--navy-primary);
+  color: var(--navy-gold-light);
+  padding: 4px 12px;
+  border-radius: 3px;
+  font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
-.gov-login-panel-header h3 {
-  font-size: 1.3rem;
+.navy-auth-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.25rem;
   font-weight: 900;
-  color: var(--gov-navy-dark);
-  margin: 0 0 6px 0;
+  color: var(--navy-primary);
 }
 
-.gov-login-panel-header p {
-  font-size: 0.8rem;
-  color: var(--gov-text-muted);
+.navy-auth-header p {
   margin: 0;
+  font-size: 0.78rem;
+  color: var(--navy-text-muted);
 }
 
-.gov-form-group {
-  margin-bottom: 18px;
+.navy-auth-body {
+  padding: 24px;
 }
 
-.gov-form-group label {
+.navy-field {
+  margin-bottom: 16px;
+}
+
+.navy-field label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 800;
-  color: var(--gov-navy-dark);
+  color: var(--navy-primary);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
   margin-bottom: 6px;
 }
 
-.gov-input-wrapper {
+.navy-input-group {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-.gov-input-icon {
+.navy-input-icon {
   position: absolute;
   left: 12px;
-  font-size: 0.85rem;
-  color: var(--gov-text-muted);
+  color: var(--navy-primary);
+  font-size: 0.9rem;
   pointer-events: none;
 }
 
-.gov-input-wrapper input {
+.navy-input {
   width: 100%;
   padding: 10px 12px 10px 36px;
   font-size: 0.88rem;
-  border: 1.5px solid var(--gov-border);
-  border-radius: var(--radius-sm);
-  background: var(--gov-card);
-  color: var(--gov-text);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.gov-input-wrapper input:focus {
-  outline: none;
-  border-color: var(--gov-navy-primary);
-  box-shadow: 0 0 0 3px rgba(22, 50, 92, 0.12);
-}
-
-.gov-pw-toggle {
-  position: absolute;
-  right: 10px;
-  background: none;
-  border: none;
-  color: var(--gov-text-muted);
-  cursor: pointer;
-  padding: 4px;
-  font-size: 0.85rem;
-}
-
-.gov-quick-pills {
-  margin: 16px 0 20px 0;
-  padding: 10px 12px;
-  background: var(--gov-bg);
-  border: 1px dashed var(--gov-border);
-  border-radius: var(--radius-sm);
-}
-
-.gov-quick-pills-label {
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: var(--gov-text-muted);
-  text-transform: uppercase;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.gov-pills-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.gov-pill-btn {
+  border: 1.5px solid var(--navy-border);
+  border-radius: 4px;
+  color: var(--navy-text);
   background: #ffffff;
-  border: 1px solid var(--gov-border);
-  border-radius: var(--radius-sm);
-  padding: 4px 10px;
-  font-size: 0.72rem;
+  transition: all 0.2s ease;
+}
+
+.navy-input:focus {
+  outline: none;
+  border-color: var(--navy-primary);
+  box-shadow: 0 0 0 3px rgba(4, 18, 123, 0.12);
+}
+
+/* Naval CAPTCHA Box */
+.navy-captcha-wrap {
+  margin-top: 6px;
+  margin-bottom: 16px;
+  background: #f1f5f9;
+  border: 1px solid var(--navy-border);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.navy-captcha-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.navy-captcha-badge {
+  background: repeating-linear-gradient(
+    45deg,
+    #04127b,
+    #04127b 10px,
+    #020b4c 10px,
+    #020b4c 20px
+  );
+  color: var(--navy-gold-light);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--navy-gold);
+  user-select: none;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.navy-captcha-refresh {
+  background: #ffffff;
+  border: 1px solid var(--navy-border);
+  border-radius: 4px;
+  color: var(--navy-primary);
+  padding: 8px 12px;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: var(--gov-navy-primary);
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.gov-pill-btn:hover {
-  background: var(--gov-navy-primary);
+.navy-captcha-refresh:hover {
+  background: var(--navy-primary);
   color: #ffffff;
-  border-color: var(--gov-navy-primary);
+  border-color: var(--navy-primary);
 }
 
-.gov-statutory-box {
+/* Indian Navy Gold Sign-In Button */
+.navy-btn-submit {
+  width: 100%;
+  background: linear-gradient(180deg, var(--navy-gold-light) 0%, var(--navy-gold) 100%);
+  color: var(--navy-dark);
+  border: 1.5px solid var(--navy-gold-border);
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(255, 175, 0, 0.35);
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.navy-btn-submit:hover {
+  background: linear-gradient(180deg, #ffe066 0%, #ffaf00 100%);
+  box-shadow: 0 4px 12px rgba(255, 175, 0, 0.5);
+  transform: translateY(-1px);
+}
+
+.navy-btn-submit:active {
+  transform: translateY(0);
+}
+
+/* Quick Fill Evaluator Credentials */
+.navy-quick-creds {
   margin-top: 18px;
   padding: 10px 12px;
-  background: #eff6ff;
-  border-left: 3px solid var(--gov-navy-primary);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: #f8fafc;
+  border: 1px dashed var(--navy-border);
+  border-radius: 4px;
+}
+
+.navy-creds-title {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--navy-primary);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.navy-creds-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.navy-pill-btn {
+  background: #ffffff;
+  border: 1px solid var(--navy-border);
+  border-radius: 3px;
+  padding: 4px 8px;
   font-size: 0.72rem;
-  color: #1e3a8a;
+  font-weight: 700;
+  color: var(--navy-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.navy-pill-btn:hover {
+  background: var(--navy-primary);
+  color: var(--navy-gold-light);
+  border-color: var(--navy-primary);
+}
+
+/* Official Secrets Warning */
+.navy-security-notice {
+  margin-top: 18px;
+  padding: 10px 12px;
+  background: #fef2f2;
+  border-left: 3.5px solid var(--navy-red);
+  border-radius: 0 4px 4px 0;
+  font-size: 0.72rem;
+  color: #991b1b;
   line-height: 1.45;
 }
 
-.gov-statutory-box strong {
+.navy-security-notice strong {
   display: block;
-  font-weight: 800;
+  font-weight: 900;
   margin-bottom: 2px;
 }
 
-/* High Contrast Adjustments */
-body.high-contrast .gov-login-info {
-  background: #000000;
-  border-right-color: #ffd700;
-}
-body.high-contrast .gov-badge-official {
-  background: #332b00;
-  color: #ffd700;
-  border-color: #ffd700;
-}
-body.high-contrast .gov-quick-pills {
-  background: #000000;
-  border-color: #ffd700;
-}
-body.high-contrast .gov-pill-btn {
-  background: #000000;
-  color: #ffd700;
-  border-color: #ffd700;
-}
-body.high-contrast .gov-statutory-box {
-  background: #111111;
-  border-left-color: #ffd700;
-  color: #ffffff;
+/* Indian Navy Portal Footer */
+.navy-footer {
+  background: var(--navy-dark);
+  color: #e2e8f0;
+  border-top: 3.5px solid var(--navy-gold);
+  padding: 24px;
+  font-size: 0.78rem;
+  line-height: 1.6;
 }
 
-@media (max-width: 860px) {
-  .gov-login-grid {
+.navy-footer-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.navy-footer-links {
+  display: flex;
+  gap: 16px;
+  font-weight: 700;
+}
+
+.navy-footer-links a {
+  color: #cbd5e1;
+  text-decoration: none;
+}
+
+.navy-footer-links a:hover {
+  color: var(--navy-gold);
+  text-decoration: underline;
+}
+
+/* High Contrast mode */
+body.high-contrast .navy-masthead {
+  background: #000000;
+  border-bottom-color: #ffd700;
+}
+body.high-contrast .navy-notice-card,
+body.high-contrast .navy-auth-card {
+  background: #121212;
+  border-color: #ffd700;
+}
+body.high-contrast .navy-card-header {
+  background: #000000;
+  border-bottom-color: #ffd700;
+}
+body.high-contrast .navy-btn-submit {
+  background: #ffd700;
+  color: #000000;
+  border-color: #ffd700;
+}
+
+@media (max-width: 900px) {
+  .navy-grid-layout {
     grid-template-columns: 1fr;
   }
-  .gov-login-info {
-    border-right: none;
-    border-bottom: 3px solid var(--gov-saffron);
-    padding: 24px;
-  }
-  .gov-login-panel {
-    padding: 24px;
+  .navy-motto-badge {
+    text-align: left;
+    border-left: none;
+    padding-left: 0;
   }
 }
 

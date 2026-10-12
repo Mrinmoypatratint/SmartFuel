@@ -3,176 +3,218 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Official Government of India SmartFuel AI-ANPR Portal. Automated CNG safety verification and dispenser interlock under Gas Cylinders Rules 2016 and CMVR 1989.">
-  <title>SmartFuel AI-ANPR | Official Government Sign In | भारत सरकार</title>
+  <meta name="description" content="Official Government of India Petroleum & PESO SmartFuel AI-ANPR Authentication Gateway.">
+  <title>SmartFuel AI-ANPR | National Petroleum & CNG Safety Portal | भारत सरकार</title>
   <link rel="stylesheet" href="/static/style.css">
   <link rel="icon" type="image/png" href="/static/smartfuel-logo.png">
 </head>
-<body class="gov-login-page">
+<body class="navy-login-page">
 
-  <!-- 1. National Flag Banner -->
+  <!-- 1. National Tricolor Strip -->
   <div class="gov-flag-bar" aria-hidden="true">
     <span></span>
     <span></span>
     <span></span>
   </div>
 
-  <!-- 2. Accessibility & National Masthead Toolbar -->
-  <header class="gov-topbar">
+  <!-- 2. Top Utility & Accessibility Bar -->
+  <header class="gov-topbar" style="background:#ffffff;border-bottom:1px solid #cbd5e1;">
     <div class="gov-flag-wrap">
       <div class="gov-flag" aria-hidden="true"><span></span><span></span><span></span></div>
-      <span id="txtGovName">भारत सरकार | Government of India</span>
+      <span id="txtGovName" style="color:var(--navy-primary);font-weight:800;">भारत सरकार | Government of India</span>
+      <span style="color:#94a3b8;margin:0 6px;">•</span>
+      <span style="font-weight:700;color:var(--navy-text-muted);font-size:0.75rem;">पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय • PESO</span>
     </div>
     <div class="gov-access-bar">
-      <span class="gov-ministry-tag">पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय • PESO</span>
-      <span style="color:var(--gov-border);margin:0 4px;">|</span>
       <button type="button" class="gov-access-btn" id="btnFontDecr" title="Decrease Font Size">A-</button>
       <button type="button" class="gov-access-btn" id="btnFontNormal" title="Reset Font Size">A</button>
       <button type="button" class="gov-access-btn" id="btnFontIncr" title="Increase Font Size">A+</button>
-      <span style="color:var(--gov-border);margin:0 4px;">|</span>
+      <span style="color:var(--navy-border);margin:0 4px;">|</span>
       <button type="button" class="gov-access-btn" id="btnContrast" title="Toggle High Contrast Mode">👁️ Contrast</button>
-      <span style="color:var(--gov-border);margin:0 4px;">|</span>
+      <span style="color:var(--navy-border);margin:0 4px;">|</span>
       <button type="button" class="gov-access-btn active" id="btnLangEn" title="English">English</button>
       <button type="button" class="gov-access-btn" id="btnLangHi" title="हिन्दी">हिन्दी</button>
     </div>
   </header>
 
-  <!-- 3. Main Login Portal Body -->
-  <main class="gov-login-main">
-    <div class="gov-login-wrapper">
-      <div class="gov-login-grid">
-        
-        <!-- Left Column: Institutional Mandate & Authority Details -->
-        <div class="gov-login-info">
-          <div>
-            <div class="gov-login-info-brand">
-              <img src="/static/smartfuel-logo.png" alt="SmartFuel National Emblem" width="68" height="68">
-              <div>
-                <h2>SmartFuel AI-ANPR</h2>
-                <p id="txtInfoSubtitle">National CNG Safety Portal</p>
-              </div>
-            </div>
+  <!-- 3. Primary Header Masthead (Navy Blue with Gold Accent) -->
+  <section class="navy-masthead">
+    <div class="navy-masthead-inner">
+      <div class="navy-brand-wrap">
+        <img src="/static/smartfuel-logo.png" alt="SmartFuel National Emblem" class="navy-crest-img">
+        <div class="navy-titles">
+          <h2 id="txtHeaderBranch">पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय • PESO | MINISTRY OF PETROLEUM & NATURAL GAS</h2>
+          <h1 id="txtPortalTitle">SmartFuel AI-ANPR</h1>
+          <p id="txtPortalSub">National Automated CNG Safety Verification & Solenoid Hardware Interlock Gateway</p>
+        </div>
+      </div>
+      <div class="navy-motto-badge">
+        <span class="navy-motto-hindi">सत्यमेव जयते</span>
+        <span class="navy-motto-sub">GAS CYLINDERS RULES, 2016 • CMVR 1989 COMPLIANT</span>
+      </div>
+    </div>
+  </section>
 
-            <div class="gov-login-info-desc" id="txtInfoDesc">
-              Official statutory enforcement gateway mandated under the <strong>Gas Cylinders Rules, 2016 (Rule 35)</strong> and <strong>Rule 115A of Central Motor Vehicles Rules (CMVR), 1989</strong> for automated safety compliance and dispenser solenoid cut-off across all City Gas Distribution (CGD) dispensing networks.
-            </div>
+  <!-- 4. Live Regulatory Directives Ticker Bar -->
+  <div class="navy-ticker-bar">
+    <span class="navy-ticker-label">🔴 LIVE DIRECTIVE</span>
+    <span id="txtTickerMessage" style="color:#f1f5f9;font-weight:600;">
+      Mandatory HSRP ANPR verification & solenoid fuel-lock enforced under Rule 35, Gas Cylinders Rules 2016 and CMVR 1989 Rule 115A across all dispensing islands.
+    </span>
+  </div>
 
-            <ul class="gov-login-features">
-              <li>
-                <div class="gov-feature-icon" aria-hidden="true">📷</div>
-                <div class="gov-feature-text">
-                  <strong id="featTitle1">Automated HSRP Plate Extraction</strong>
-                  <span id="featDesc1">Neural network ANPR with real-time confidence grading and BH-series plate compatibility.</span>
-                </div>
-              </li>
-              <li>
-                <div class="gov-feature-icon" aria-hidden="true">🛡️</div>
-                <div class="gov-feature-text">
-                  <strong id="featTitle2">PESO Hydro-Test Compliance</strong>
-                  <span id="featDesc2">Instant validation of cylinder serial numbers, testing validity, and statutory expiry limits.</span>
-                </div>
-              </li>
-              <li>
-                <div class="gov-feature-icon" aria-hidden="true">⚡</div>
-                <div class="gov-feature-text">
-                  <strong id="featTitle3">Hardware Solenoid Interlock</strong>
-                  <span id="featDesc3">Direct MODBUS-RTU electrical relay interlocking preventing unauthorized fuel delivery.</span>
-                </div>
-              </li>
-              <li>
-                <div class="gov-feature-icon" aria-hidden="true">📜</div>
-                <div class="gov-feature-text">
-                  <strong id="featTitle4">Tamper-Evident Safety Ledger</strong>
-                  <span id="featDesc4">Cryptographically-signed inspection reports with SHA-256 integrity checks.</span>
-                </div>
-              </li>
-            </ul>
+  <!-- 5. Main 2-Column Split Layout -->
+  <main class="navy-login-main">
+    <div class="navy-grid-layout">
+      
+      <!-- Left Column: Official Directives & Safety Standards -->
+      <section class="navy-notice-card">
+        <div class="navy-card-header">
+          <span aria-hidden="true" style="font-size:1.2rem;color:var(--navy-gold);">📜</span>
+          <h3 id="txtDirectivesHeader">महत्वपूर्ण निर्देश एवं सुरक्षा मानक | OFFICIAL DIRECTIVES</h3>
+        </div>
+        <div class="navy-card-body">
+          <div class="navy-mandate-banner" id="txtMandateBanner">
+            <strong>STATUTORY MANDATE (PESO / MoRTH / CGD NETWORKS):</strong>
+            Automated verification is legally mandated to prevent catastrophic onboard high-pressure cylinder ruptures. Fuel dispensing is automatically locked for unauthorized or expired vehicles.
           </div>
 
-          <div class="gov-login-info-footer">
-            <span>PESO Standard: ISO/IEC 27001 Certified</span>
-            <span>Toll-Free Helpline: 1800-11-2026</span>
+          <ul class="navy-directives-list">
+            <li class="navy-directive-item">
+              <div class="navy-anchor-badge" aria-hidden="true">📷</div>
+              <div class="navy-directive-text">
+                <strong id="dirTitle1">Neural HSRP Computer Vision ANPR</strong>
+                <p id="dirDesc1">Sub-second optical plate recognition compatible with standard state plates and BH-series Bharat registration numbers.</p>
+              </div>
+            </li>
+            <li class="navy-directive-item">
+              <div class="navy-anchor-badge" aria-hidden="true">🛡️</div>
+              <div class="navy-directive-text">
+                <strong id="dirTitle2">PESO Hydro-Test Compliance Lock</strong>
+                <p id="dirDesc2">Zero-tolerance automated interlock: immediate dispensing lockout if cylinder hydro-test certificate exceeds 3-year statutory limit.</p>
+              </div>
+            </li>
+            <li class="navy-directive-item">
+              <div class="navy-anchor-badge" aria-hidden="true">⚡</div>
+              <div class="navy-directive-text">
+                <strong id="dirTitle3">MODBUS-RTU Hardware Interlock</strong>
+                <p id="dirDesc3">Sub-100ms hardware electrical relay cut-off switch wired directly into dispenser solenoid valves.</p>
+              </div>
+            </li>
+            <li class="navy-directive-item">
+              <div class="navy-anchor-badge" aria-hidden="true">📑</div>
+              <div class="navy-directive-text">
+                <strong id="dirTitle4">Cryptographic SHA-256 Safety Ledger</strong>
+                <p id="dirDesc4">Immutable cryptographic audit records of all inspection decisions, timestamps, and operator actions.</p>
+              </div>
+            </li>
+          </ul>
+
+          <div class="navy-helpdesk-box">
+            <div>
+              <strong>Toll-Free National Helpline:</strong> 1800-11-2026<br>
+              <span style="color:var(--navy-text-muted);font-size:0.72rem;">Operational 24x7 across all City Gas Distribution (CGD) Station Networks</span>
+            </div>
+            <span style="font-weight:800;color:var(--navy-primary);background:#e2e8f0;padding:4px 8px;border-radius:3px;">ISO 27001 CERTIFIED</span>
           </div>
         </div>
+      </section>
 
-        <!-- Right Column: Official Authentication Panel -->
-        <div class="gov-login-panel">
-          <div class="gov-login-panel-header">
-            <span class="gov-badge-official" id="badgeOfficial">
-              <span aria-hidden="true">🔒</span> <span id="txtBadgeAuth">Official Authority Gateway</span>
-            </span>
-            <h3 id="txtSignInHeading">Officer & Operator Sign In</h3>
-            <p id="txtSignInSub">Enter your government or CGD authorized station credentials to access the safety verification console.</p>
+      <!-- Right Column: Officer Authentication Card -->
+      <section class="navy-auth-card">
+        <div class="navy-auth-header">
+          <div class="navy-auth-crest-badge">
+            <span aria-hidden="true">🔒</span> <span id="txtAuthBadge">STATUTORY SAFETY GATEWAY</span>
           </div>
+          <h3 id="txtSignInHeading">अधिकारी / ऑपरेटर लॉगिन | Officer Sign In</h3>
+          <p id="txtSignInSub">Enter your official registered credentials to access the safety verification console.</p>
+        </div>
 
+        <div class="navy-auth-body">
           <form id="loginForm" novalidate>
-            <div class="gov-form-group">
+            <div class="navy-field">
               <label for="email">
-                <span id="lblEmail">OFFICIAL EMAIL ID</span>
-                <span style="font-weight:400;color:var(--gov-red);font-size:0.7rem;">*Mandatory</span>
+                <span id="lblEmail">OFFICIAL SERVICE EMAIL ID</span>
+                <span style="color:var(--navy-red);font-weight:900;">*Mandatory</span>
               </label>
-              <div class="gov-input-wrapper">
-                <span class="gov-input-icon" aria-hidden="true">✉️</span>
-                <input id="email" type="email" autocomplete="username" required placeholder="admin@smartfuel.local" spellcheck="false">
+              <div class="navy-input-group">
+                <span class="navy-input-icon" aria-hidden="true">✉️</span>
+                <input id="email" class="navy-input" type="email" autocomplete="username" required placeholder="admin@smartfuel.local" spellcheck="false">
               </div>
             </div>
 
-            <div class="gov-form-group">
+            <div class="navy-field">
               <label for="password">
                 <span id="lblPassword">SECURITY PASSWORD</span>
-                <span style="font-weight:400;color:var(--gov-red);font-size:0.7rem;">*Mandatory</span>
+                <span style="color:var(--navy-red);font-weight:900;">*Mandatory</span>
               </label>
-              <div class="gov-input-wrapper">
-                <span class="gov-input-icon" aria-hidden="true">🔑</span>
-                <input id="password" type="password" autocomplete="current-password" required placeholder="••••••••••••">
+              <div class="navy-input-group">
+                <span class="navy-input-icon" aria-hidden="true">🔑</span>
+                <input id="password" class="navy-input" type="password" autocomplete="current-password" required placeholder="••••••••••••">
                 <button type="button" class="gov-pw-toggle" id="btnTogglePassword" title="Show or hide password" aria-label="Toggle password visibility">👁️</button>
               </div>
             </div>
 
-            <button id="loginBtn" type="submit" class="btn primary full" style="padding:12px;font-size:0.92rem;letter-spacing:0.02em;">
-              <span id="txtBtnSignIn">Sign In to Safety Portal →</span>
-            </button>
-            <div id="error" class="error" role="alert" style="color:var(--gov-red);font-size:0.8rem;margin-top:10px;font-weight:700;display:none;"></div>
+            <!-- Interactive CAPTCHA Security Verification Block -->
+            <div class="navy-captcha-wrap">
+              <div style="font-size:0.72rem;font-weight:800;color:var(--navy-primary);margin-bottom:6px;text-transform:uppercase;">
+                <span id="lblCaptchaTitle">SECURITY CAPTCHA VERIFICATION</span>
+              </div>
+              <div class="navy-captcha-row">
+                <div class="navy-captcha-badge" id="captchaDisplay" aria-label="Security Captcha Code">SF792K</div>
+                <button type="button" class="navy-captcha-refresh" id="btnRefreshCaptcha" title="Refresh Security Code">🔄 Refresh</button>
+              </div>
+              <input id="captchaInput" class="navy-input" type="text" placeholder="Enter CAPTCHA text shown above" style="padding-left:12px;font-size:0.82rem;text-transform:uppercase;" required>
+            </div>
 
-            <!-- Quick Credentials Helper for System Evaluators & Field Operators -->
-            <div class="gov-quick-pills">
-              <span class="gov-quick-pills-label" id="txtQuickFillLabel">Demo Evaluation Credentials (1-Click Fill):</span>
-              <div class="gov-pills-row">
-                <button type="button" class="gov-pill-btn" id="btnCredAdmin" title="Fill Head Administrator Credentials">
-                  👑 Admin (Headquarters)
+            <button id="loginBtn" type="submit" class="navy-btn-submit">
+              <span aria-hidden="true">🔒</span>
+              <span id="txtBtnSignIn">सुरक्षित लॉगिन करें | SECURE SIGN IN →</span>
+            </button>
+            <div id="error" role="alert" style="color:var(--navy-red);font-size:0.8rem;margin-top:10px;font-weight:800;display:none;background:#fee2e2;padding:8px 12px;border-radius:4px;border:1px solid #fca5a5;"></div>
+
+            <!-- 1-Click Fast Evaluator Credentials Pills -->
+            <div class="navy-quick-creds">
+              <span class="navy-creds-title" id="txtQuickCreds">Demo Evaluation Credentials (1-Click Fill):</span>
+              <div class="navy-creds-pills">
+                <button type="button" class="navy-pill-btn" id="btnCredAdmin" title="Fill Head Administrator Credentials">
+                  👑 Head Administrator
                 </button>
-                <button type="button" class="gov-pill-btn" id="btnCredOperator" title="Fill Station Operator Credentials">
-                  ⛽ Station Operator
+                <button type="button" class="navy-pill-btn" id="btnCredOperator" title="Fill Station Operator Credentials">
+                  ⛽ CGD Station Operator
                 </button>
-                <button type="button" class="gov-pill-btn" id="btnCredAuditor" title="Fill Regulatory Auditor Credentials">
-                  🔍 Safety Auditor
+                <button type="button" class="navy-pill-btn" id="btnCredAuditor" title="Fill Safety Auditor Credentials">
+                  🔍 Petroleum Auditor
                 </button>
               </div>
             </div>
 
-            <div class="gov-statutory-box">
-              <strong id="txtStatutoryTitle">⚠️ STATUTORY SECURITY NOTICE:</strong>
-              <span id="txtStatutoryText">Access is restricted strictly to authorized petroleum inspectors and station personnel under the Information Technology Act, 2000. All authentication attempts and network sessions are monitored and logged.</span>
+            <!-- Statutory Security Notice -->
+            <div class="navy-security-notice">
+              <strong id="txtSecNoticeTitle">⚠️ STATUTORY REGULATORY NOTICE:</strong>
+              <span id="txtSecNoticeText">This is a protected Government of India safety console. Authorized operator access only under the Gas Cylinders Rules 2016 (Rule 35) and Sections 43 & 66 of the Information Technology Act, 2000. All activities and network IPs are monitored and logged.</span>
             </div>
           </form>
         </div>
+      </section>
 
-      </div>
     </div>
   </main>
 
-  <!-- 4. GIGW 3.0 Government Portal Footer -->
-  <footer class="gov-footer">
-    <div class="gov-footer-content">
+  <!-- 6. Government Portal Footer -->
+  <footer class="navy-footer">
+    <div class="navy-footer-inner">
       <div>
-        <strong>पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय | Petroleum & Explosives Safety Organization (PESO)</strong><br>
-        <span>Government of India • Central Motor Vehicles Rules (CMVR) 1989 & Gas Cylinders Rules 2016 Enforcement System</span>
+        <strong style="color:var(--navy-gold);">पेट्रोलियम एवं प्राकृतिक गैस मंत्रालय • पेट्रोलियम और विस्फोटक सुरक्षा संगठन (PESO)</strong><br>
+        <span style="color:#cbd5e1;font-size:0.74rem;">SmartFuel AI-ANPR National System • GIGW 3.0 Compliant Safety Portal • Government of India</span>
       </div>
-      <div class="gov-footer-links">
-        <a href="#" id="linkHelpdesk">National Helpdesk</a>
-        <a href="#" id="linkPolicy">Security Policy</a>
-        <a href="#" id="linkTerms">Terms of Service</a>
-        <a href="#" id="linkGigw">GIGW 3.0 Compliance</a>
+      <div class="navy-footer-links">
+        <a href="#">About PESO</a>
+        <a href="#">MoRTH Portal</a>
+        <a href="#">RTI Act</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">National Helpdesk</a>
       </div>
     </div>
   </footer>
