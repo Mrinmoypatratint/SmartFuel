@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Verify Staging Secrets Configuration
         id: secrets-check
@@ -72,7 +72,7 @@ jobs:
     if: needs.pre-deploy-validation.outputs.configured == 'true'
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup SSH Connection
         uses: webfactory/ssh-agent@v0.9.0
