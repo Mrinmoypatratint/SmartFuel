@@ -121,11 +121,11 @@ def cng_supply_guidance(result, needs_review=False):
     vehicle=result.get('vehicle') or {}
     plate=plate_norm(result.get('plate')) or 'NOT READ'
     if not vehicle and result.get('status')=='not_registered':
-        return {'plate':plate,'state':'hold','headline':'DATA NOT AVAILABLE IN DATABASE',
-                'instruction':'Vehicle record was searched and not found in the database. Dispensing CNG is on hold.',
+        return {'plate':plate,'state':'review','headline':'DATA NOT AVAILABLE IN DATABASE',
+                'instruction':'Vehicle record was searched and not found in the database. Dispensing CNG is on hold pending manual supervisor review.',
                 'reasons':[f'Vehicle number {plate} was searched in the database, but no record was found.','Vehicle data is not available in the database.'],
-                'reason_codes':['VEHICLE_NOT_IN_DATABASE'],
-                'checks':[{'name':'Database Record Lookup','state':'fail','detail':f'{plate}: Searched in database - record not available'}],
+                'reason_codes':['VEHICLE_NOT_IN_DATABASE', 'VEHICLE_NOT_REGISTERED'],
+                'checks':[{'name':'Database Record Lookup','state':'review','detail':f'{plate}: Searched in database - record not available'}],
                 'disclaimer':'DATABASE SEARCH - RECORD NOT FOUND'}
     reason_codes=[]
     reasons=[]
