@@ -17,7 +17,7 @@ from .database import Vehicle, Cylinder
 
 log = logging.getLogger("smartfuel.vahan")
 
-VAHAN_ENABLED = os.getenv("VAHAN_GATEWAY_ENABLED", "1") == "1"
+VAHAN_ENABLED = os.getenv("VAHAN_GATEWAY_ENABLED", "0") == "1"
 VAHAN_PROVIDER = os.getenv("VAHAN_API_PROVIDER", "rapidapi").lower()
 VAHAN_API_KEY = os.getenv(
     "VAHAN_API_KEY",

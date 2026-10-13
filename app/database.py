@@ -16,6 +16,9 @@ if not DB_URL:
     DB_URL=f'sqlite:///{ROOT}/storage/smartfuel_v2.sqlite3'
 if DB_URL.startswith('postgres://'):
     DB_URL = DB_URL.replace('postgres://', 'postgresql://', 1)
+if DB_URL.startswith('sqlite:///') and not DB_URL.startswith('sqlite:///:memory:'):
+    sqlite_file = Path(DB_URL.replace('sqlite:///', ''))
+    sqlite_file.parent.mkdir(parents=True, exist_ok=True)
 engine = create_engine(DB_URL, pool_pre_ping=True, connect_args={'check_same_thread':False, 'timeout':20} if DB_URL.startswith('sqlite:') else {})
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 Base = declarative_base()
@@ -79,44 +82,56 @@ class Audit(Base):
     details=Column(String(350),default='')
 
 def seed_demo(db):
-    """Idempotently load 100 *synthetic* records, without altering existing records.
-
-    Works on both empty and previously seeded (six-record) installations.
-    Use SEED_DEMO=0 to suppress demo data in non-demo environments.
-    """
-    import csv
-    folder = ROOT / 'seed_data'
+    """Seed the database with the demonstration station and the single authorized vehicle entry 'WB42AV8012'."""
     station = db.query(Station).filter_by(name='Demo IGL CNG Station').order_by(Station.id).first()
     if station is None:
-        station = Station(name='Demo IGL CNG Station',city='Durgapur',camera_name='USB camera')
+        station = Station(name='Demo IGL CNG Station', city='Durgapur', camera_name='USB / Ingress Camera')
         db.add(station)
         db.flush()
-    vehicles_path = folder / 'vehicles_100.csv'
-    cylinders_path = folder / 'cylinders_100.csv'
-    if not vehicles_path.is_file() or not cylinders_path.is_file():
-        raise RuntimeError('Required demonstration seed CSV files missing from seed_data/')
-    with vehicles_path.open(newline='',encoding='utf-8') as f:
-        vehicle_rows = list(csv.DictReader(f))
-    with cylinders_path.open(newline='',encoding='utf-8') as f:
-        cylinder_rows = list(csv.DictReader(f))
-    if len(vehicle_rows) != 100:
-        raise RuntimeError('Expected exactly 100 synthetic demo vehicle records')
-    # Prevent changing existing operator-entered records and preexisting sample IDs.
-    present = {x[0] for x in db.query(Vehicle.plate).all()}
-    created = set()
-    for row in vehicle_rows:
-        if row['plate'] in present:
-            continue
-        db.add(Vehicle(plate=row['plate'],model=row['model'],cng_endorsed=row['cng_endorsed'],
-                       notes=row['notes'],station_id=station.id))
-        created.add(row['plate'])
-    db.flush()
-    # Cylinders only for NEW vehicles. Existing records are never rewritten.
-    for row in cylinder_rows:
-        if row['plate'] not in created:
-            continue
-        db.add(Cylinder(plate=row['plate'],serial=row['serial'],last_test=row['last_test'],
-                        expiry=row['expiry'],certificate_ref=row['certificate_ref']))
+
+    target_plate = 'WB42AV8012'
+
+    # Ensure WB42AV8012 is the only vehicle record in the database
+    db.query(Vehicle).filter(Vehicle.plate != target_plate).delete(synchronize_session=False)
+    db.query(Cylinder).filter(Cylinder.plate != target_plate).delete(synchronize_session=False)
+
+    existing = db.get(Vehicle, target_plate)
+    if existing is None:
+        v = Vehicle(
+            plate=target_plate,
+            model='Maruti Suzuki WagonR LXi CNG',
+            owner_name='Rohit Sharma',
+            cng_endorsed='yes',
+            notes='RTO: WB-42 (Durgapur RTO, West Bengal) — Authorized CNG Fuel Endorsement',
+            station_id=station.id
+        )
+        db.add(v)
+        db.flush()
+        cyl = Cylinder(
+            plate=target_plate,
+            serial='CYL-WB42-8012-A1',
+            last_test='2024-04-10',
+            expiry='2027-04-09',
+            certificate_ref='PESO/WB/CYL/2024/8012',
+            certificate_file=''
+        )
+        db.add(cyl)
+    else:
+        existing.model = 'Maruti Suzuki WagonR LXi CNG'
+        existing.owner_name = 'Rohit Sharma'
+        existing.cng_endorsed = 'yes'
+        existing.notes = 'RTO: WB-42 (Durgapur RTO, West Bengal) — Authorized CNG Fuel Endorsement'
+        existing.station_id = station.id
+        if not existing.cylinders:
+            cyl = Cylinder(
+                plate=target_plate,
+                serial='CYL-WB42-8012-A1',
+                last_test='2024-04-10',
+                expiry='2027-04-09',
+                certificate_ref='PESO/WB/CYL/2024/8012',
+                certificate_file=''
+            )
+            db.add(cyl)
     db.commit()
 
 

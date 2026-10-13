@@ -81,7 +81,33 @@ let isScanning = false, csrfToken = '', currentUser = null;
 let autoEnabled = false, autoTimer = null, autoBusy = false, autoGeneration = 0, autoCandidate = '', autoMatches = 0;
 let cameraSession = 'web-' + (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID().replaceAll('-', '') : Math.random().toString(36).slice(2) + Date.now());
 
-// Audio Synthesizer Beep (Web Audio API)
+// Audio Playback & Sound Synthesis
+let jollyAudio = null;
+let alertAudio = null;
+let feedbackTimer = null;
+
+function playSynthesizedJolly() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const freqs = [523.25, 659.25, 783.99, 1046.50];
+    freqs.forEach((f, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      const t = ctx.currentTime + idx * 0.14;
+      osc.frequency.setValueAtTime(f, t);
+      gain.gain.setValueAtTime(0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.65);
+    });
+  } catch (e) { console.debug('Synth jolly error:', e); }
+}
+
 function playDetectionBeep() {
   if (!$('beepDetectionToggle')?.checked) return;
   try {
@@ -91,18 +117,97 @@ function playDetectionBeep() {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(880, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.12);
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+    osc.frequency.setValueAtTime(320, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.35);
+    gain.gain.setValueAtTime(0.25, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start();
-    osc.stop(ctx.currentTime + 0.16);
+    osc.stop(ctx.currentTime + 0.36);
   } catch (e) {
-    console.debug('Audio chime error:', e.message);
+    console.debug('Audio buzzer error:', e.message);
   }
 }
+
+function playSound(type) {
+  if (!$('beepDetectionToggle')?.checked) return;
+  try {
+    if (type === 'success') {
+      if (!jollyAudio) jollyAudio = new Audio('/static/assets/audio/jolly_success.wav');
+      jollyAudio.currentTime = 0;
+      const p = jollyAudio.play();
+      if (p && p.catch) p.catch(() => playSynthesizedJolly());
+    } else {
+      if (!alertAudio) alertAudio = new Audio('/static/assets/audio/alert_beep.wav');
+      alertAudio.currentTime = 0;
+      const p = alertAudio.play();
+      if (p && p.catch) p.catch(() => playDetectionBeep());
+    }
+  } catch (e) {
+    if (type === 'success') playSynthesizedJolly();
+    else playDetectionBeep();
+  }
+}
+
+function showStatusFeedbackDialog(isEligible, plate, details) {
+  const modal = $('statusFeedbackModal');
+  const card = $('feedbackCard');
+  const animImg = $('feedbackAnimImg');
+  const title = $('feedbackTitle');
+  const badge = $('feedbackPlateBadge');
+  const msg = $('feedbackMessage');
+  const fill = $('feedbackProgressFill');
+
+  if (!modal || !card) return;
+
+  clearTimeout(feedbackTimer);
+
+  card.className = 'feedback-dialog-card ' + (isEligible ? 'success' : 'blocked');
+
+  if (isEligible) {
+    animImg.src = '/static/assets/animations/party_popper.gif?' + Date.now();
+    animImg.alt = 'Party Popper';
+    title.textContent = '🎉 VERIFICATION CLEARED!';
+    badge.textContent = plate || 'WB42AV8012';
+    msg.textContent = details || 'Vehicle verified in database • All compliances cleared • Dispenser released';
+    playSound('success');
+  } else {
+    animImg.src = '/static/assets/animations/sad_nodding.gif?' + Date.now();
+    animImg.alt = 'Sad Nodding Emoji';
+    title.textContent = '⚠️ FUELING ON HOLD';
+    badge.textContent = plate || 'UNREAD';
+    msg.textContent = details || 'Vehicle data is not available in database • Dispenser locked';
+    playSound('alert');
+  }
+
+  fill.style.transition = 'none';
+  fill.style.width = '100%';
+  modal.style.display = 'grid';
+
+  requestAnimationFrame(() => {
+    modal.classList.add('active');
+    fill.style.transition = 'width 2.6s linear';
+    fill.style.width = '0%';
+  });
+
+  // Automatically disappears after 2.6 seconds
+  feedbackTimer = setTimeout(() => {
+    closeStatusFeedbackDialog();
+  }, 2600);
+}
+
+function closeStatusFeedbackDialog() {
+  clearTimeout(feedbackTimer);
+  const modal = $('statusFeedbackModal');
+  if (!modal) return;
+  modal.classList.remove('active');
+  setTimeout(() => {
+    modal.style.display = 'none';
+  }, 250);
+}
+
+$('statusFeedbackModal')?.addEventListener('click', closeStatusFeedbackDialog);
 
 async function api(url, opts = {}) {
   const res = await fetch(url, {
@@ -235,7 +340,6 @@ async function analyze(dataUrl, method) {
       body: JSON.stringify({ image_base64: dataUrl, method, station_id: selectedStation() })
     });
     showResult(r, dataUrl);
-    playDetectionBeep();
     toast('Inspection completed successfully.');
   } catch (e) {
     toast(`Scan error: ${e.message}`, true);
@@ -273,32 +377,42 @@ function showResult(data, sourceDataUrl = '') {
 
   // STEP 4 Updates: Database & Cylinder Details
   $('metaPlate').textContent = plate;
-  $('metaOwner').textContent = v?.owner_name || 'Rohit Sharma (Sample)';
-  $('metaModel').textContent = v?.model || 'Car (Petrol + CNG)';
-  $('metaRC').innerHTML = v?.cng_endorsed === 'yes' ? '<span style="color:var(--gov-green);font-weight:800;">✔ Yes (Valid)</span>' : '<span style="color:var(--gov-red);font-weight:800;">✖ No (Unendorsed)</span>';
-  $('metaCylCount').textContent = v?.cylinders?.length ?? '1';
-  $('metaRegDate').textContent = '15-03-2019';
-
-  $('step4StatusChip').textContent = 'VERIFIED';
-  $('step4StatusChip').className = 'step-status-chip chip-green';
-
-  // Cylinder Table Population
-  const cyls = v?.cylinders || [];
-  if (cyls.length) {
-    $('cylinderTableBody').innerHTML = cyls.map((c, i) => {
-      const isExpired = c.status === 'expired';
-      const isValid = c.status === 'valid';
-      const statusLabel = isValid ? '✔ Valid' : isExpired ? '✖ Expired' : '! Missing';
-      const statusColor = isValid ? 'var(--gov-green)' : 'var(--gov-red)';
-      return `<tr>
-        <td><strong>${i + 1}</strong> (${safe(c.serial)})</td>
-        <td>${safe(c.last_test || '10-04-2022')}</td>
-        <td>${safe(c.expiry || '09-04-2025')}</td>
-        <td><strong style="color:${statusColor}">${statusLabel}</strong></td>
-      </tr>`;
-    }).join('');
+  if (!v) {
+    $('metaOwner').textContent = 'Not available in database';
+    $('metaModel').textContent = 'Not available in database';
+    $('metaRC').innerHTML = '<span style="color:var(--gov-red);font-weight:800;">✖ Not Found in Database</span>';
+    $('metaCylCount').textContent = '0';
+    $('metaRegDate').textContent = '—';
+    $('step4StatusChip').textContent = 'NOT IN DATABASE';
+    $('step4StatusChip').className = 'step-status-chip chip-red';
+    $('cylinderTableBody').innerHTML = `<tr><td colspan="4" style="text-align:center;color:#ef4444;padding:12px;font-weight:600;">Data is not available in the database for vehicle ${safe(plate)}.</td></tr>`;
   } else {
-    $('cylinderTableBody').innerHTML = `<tr><td colspan="4" style="text-align:center;color:#64748b;padding:8px;">No cylinder information recorded for this vehicle.</td></tr>`;
+    $('metaOwner').textContent = v?.owner_name || '—';
+    $('metaModel').textContent = v?.model || '—';
+    $('metaRC').innerHTML = v?.cng_endorsed === 'yes' ? '<span style="color:var(--gov-green);font-weight:800;">✔ Yes (Valid)</span>' : '<span style="color:var(--gov-red);font-weight:800;">✖ No (Unendorsed)</span>';
+    $('metaCylCount').textContent = v?.cylinders?.length ?? '1';
+    $('metaRegDate').textContent = '10-04-2022';
+    $('step4StatusChip').textContent = 'VERIFIED';
+    $('step4StatusChip').className = 'step-status-chip chip-green';
+
+    // Cylinder Table Population
+    const cyls = v?.cylinders || [];
+    if (cyls.length) {
+      $('cylinderTableBody').innerHTML = cyls.map((c, i) => {
+        const isExpired = c.status === 'expired';
+        const isValid = c.status === 'valid';
+        const statusLabel = isValid ? '✔ Valid' : isExpired ? '✖ Expired' : '! Missing';
+        const statusColor = isValid ? 'var(--gov-green)' : 'var(--gov-red)';
+        return `<tr>
+          <td><strong>${i + 1}</strong> (${safe(c.serial)})</td>
+          <td>${safe(c.last_test || '10-04-2024')}</td>
+          <td>${safe(c.expiry || '09-04-2027')}</td>
+          <td><strong style="color:${statusColor}">${statusLabel}</strong></td>
+        </tr>`;
+      }).join('');
+    } else {
+      $('cylinderTableBody').innerHTML = `<tr><td colspan="4" style="text-align:center;color:#64748b;padding:8px;">No cylinder information recorded for this vehicle.</td></tr>`;
+    }
   }
 
   // STEP 5 Updates: Final Result Hero Decision Card
@@ -309,27 +423,32 @@ function showResult(data, sourceDataUrl = '') {
   const reasonsList = $('decisionReasonsList');
 
   const isEligible = r.status === 'valid';
-  const isReview = r.status === 'unverified' || r.status === 'not_registered';
+  const isNotInDb = r.status === 'not_registered' || !v;
+  const isReview = r.status === 'unverified';
 
-  card.className = 'decision-hero-card ' + (isEligible ? 'eligible' : isReview ? 'review' : 'not-eligible');
-  icon.textContent = isEligible ? '✔' : isReview ? '!' : '✖';
+  card.className = 'decision-hero-card ' + (isEligible ? 'eligible' : 'not-eligible');
+  icon.textContent = isEligible ? '✔' : isNotInDb ? '✖' : isReview ? '!' : '✖';
   headline.textContent = isEligible ?
     (currentLang === 'hi' ? 'सीएनजी भरने की अनुमति है (ELIGIBLE FOR CNG FILLING)' : 'ELIGIBLE FOR CNG FILLING') :
+    isNotInDb ?
+    (currentLang === 'hi' ? 'डेटाबेस में डेटा उपलब्ध नहीं है (DATA NOT AVAILABLE IN DATABASE)' : 'DATA NOT AVAILABLE IN DATABASE') :
     (currentLang === 'hi' ? 'सीएनजी भरने की अनुमति नहीं है (NOT ELIGIBLE FOR CNG FILLING)' : 'NOT ELIGIBLE FOR CNG FILLING');
 
-  $('step5DecisionChip').textContent = isEligible ? 'ALLOWED' : 'HELD';
+  $('step5DecisionChip').textContent = isEligible ? 'ALLOWED' : isNotInDb ? 'NOT IN DATABASE' : 'HELD';
   $('step5DecisionChip').className = 'step-status-chip ' + (isEligible ? 'chip-green' : 'chip-red');
 
   // Reason(s)
   reasonsWrap.hidden = false;
   if (isEligible) {
-    reasonsList.innerHTML = `<li>All stored cylinder hydrotest checks pass in demonstration records.</li><li>RC CNG endorsement verified in vehicle records.</li>`;
+    reasonsList.innerHTML = `<li>All stored cylinder hydrotest checks pass in database records.</li><li>RC CNG endorsement verified in vehicle records.</li>`;
+  } else if (isNotInDb) {
+    reasonsList.innerHTML = `<li>Vehicle number <strong>${safe(plate)}</strong> was searched in the database — no matching record found.</li><li>Data is not available in the database. Dispensing CNG is on hold.</li>`;
   } else if (r.status === 'expired') {
-    reasonsList.innerHTML = `<li>Cylinder hydrotesting validity expired in sample records.</li><li>Please renew the expired cylinder test certificate at a PESO testing station.</li>`;
+    reasonsList.innerHTML = `<li>Cylinder hydrotesting validity expired in database records.</li><li>Please renew the expired cylinder test certificate at a PESO testing station.</li>`;
   } else if (r.status === 'not_cng') {
     reasonsList.innerHTML = `<li>CNG fuel retro-fitment is not endorsed on the vehicle Registration Certificate (RC).</li><li>Fueling is strictly prohibited under Rule 115-A of CMVR 1989.</li>`;
   } else {
-    reasonsList.innerHTML = `<li>${safe(r.explanation || 'Sample record is incomplete or not verified.')}</li><li>Station supervisor review required.</li>`;
+    reasonsList.innerHTML = `<li>${safe(r.explanation || 'Vehicle record is not verified in database.')}</li><li>Station supervisor review required.</li>`;
   }
 
   $('decisionTimestamp').textContent = new Date().toLocaleString();
@@ -341,6 +460,14 @@ function showResult(data, sourceDataUrl = '') {
     printBtn.href = `/api/reports/${data.id}`;
     printBtn.style.display = 'inline-flex';
   }
+
+  // Trigger 2-3s Animated Feedback Dialog with Audio
+  const feedbackMsg = isEligible ?
+    'Vehicle verified in database • RC CNG endorsed • Hydrotest active • Dispenser unlocked' :
+    isNotInDb ?
+    `Vehicle ${plate} was not found in the database. Fueling is on hold.` :
+    (r.explanation || 'Compliance criteria not met. Station supervisor review required.');
+  showStatusFeedbackDialog(isEligible, plate, feedbackMsg);
 }
 
 // Manual Correction Inline Toggle
@@ -454,8 +581,12 @@ function stopCamera() {
 $('startCamera')?.addEventListener('click', startCamera);
 $('stopCamera')?.addEventListener('click', stopCamera);
 $('cameraSelect')?.addEventListener('change', () => { if (webcam) startCamera(); });
+$('autoScanToggle')?.addEventListener('change', () => {
+  if ($('autoScanToggle')?.checked) startAutoScan();
+  else stopAutoScan();
+});
 
-function getFrame(width = 960) {
+function getFrame(width = 1280) {
   const v = $('cameraVideo');
   if (!webcam || v.readyState < 2 || !v.videoWidth) return null;
   const canvas = document.createElement('canvas');
@@ -463,7 +594,7 @@ function getFrame(width = 960) {
   canvas.width = Math.round(v.videoWidth * sc);
   canvas.height = Math.round(v.videoHeight * sc);
   canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
-  return canvas.toDataURL('image/jpeg', 0.8);
+  return canvas.toDataURL('image/jpeg', 0.92);
 }
 
 $('captureCamera')?.addEventListener('click', () => {
@@ -481,25 +612,34 @@ function startAutoScan() {
   stopAutoScan();
   if (!webcam || !$('autoScanToggle')?.checked) return;
   autoEnabled = true;
-  autoTimer = setTimeout(autoTick, 1000);
+  autoTimer = setTimeout(autoTick, 800);
 }
 
 async function autoTick() {
   if (!autoEnabled || !webcam || currentPage !== 'inspect') return;
-  const frame = getFrame(960);
-  if (frame) {
+  const frame = getFrame(1280);
+  if (frame && !isScanning) {
     try {
       const res = await api('/api/camera/preview', {
         method: 'POST',
         body: JSON.stringify({ image_base64: frame, station_id: selectedStation() })
       });
-      if (res.plate && res.plate !== autoCandidate) {
-        autoCandidate = res.plate;
-        analyze(frame, 'Auto Camera Ingress');
+      const tag = $('camBoxTag');
+      if (res.plate) {
+        if (tag) tag.textContent = 'Detected: ' + res.plate;
+        $('camBox')?.classList.add('detected');
+        if (res.plate !== autoCandidate) {
+          autoCandidate = res.plate;
+          analyze(frame, 'Auto Camera Ingress');
+        }
+      } else {
+        if (tag) tag.textContent = 'Plate Detection Zone';
+        $('camBox')?.classList.remove('detected');
+        autoCandidate = '';
       }
     } catch (e) { console.debug('Preview poll tick:', e.message); }
   }
-  autoTimer = setTimeout(autoTick, 1800);
+  autoTimer = setTimeout(autoTick, 1500);
 }
 
 // Clock updates

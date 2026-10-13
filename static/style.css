@@ -403,6 +403,11 @@ body.high-contrast .gov-marquee-ticker {
   pointer-events: none;
   display: grid;
   place-items: end center;
+  transition: all 0.2s ease;
+}
+.camera-overlay-box.detected {
+  border: 2.5px solid #22c55e;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.5), 0 0 0 9999px rgba(0, 0, 0, 0.45);
 }
 .camera-overlay-tag {
   background: rgba(0, 0, 0, 0.75);
@@ -1831,3 +1836,143 @@ body.high-contrast .navy-btn-submit {
   .gov-masthead { flex-direction: column; align-items: flex-start; gap: 12px; }
   .gov-badges-section { align-items: flex-start; }
 }
+
+/* Feedback Dialog Modal (Auto-disappears in 2-3s) */
+.feedback-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: grid;
+  place-items: center;
+  background: rgba(10, 25, 47, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.feedback-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.feedback-dialog-card {
+  position: relative;
+  background: #ffffff;
+  width: min(92vw, 440px);
+  border-radius: 16px;
+  padding: 24px 20px 16px;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transform: scale(0.85);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+.feedback-modal-overlay.active .feedback-dialog-card {
+  transform: scale(1);
+}
+
+.feedback-dialog-card.success {
+  border-top: 6px solid #16a34a;
+}
+
+.feedback-dialog-card.blocked {
+  border-top: 6px solid #dc2626;
+}
+
+.feedback-anim-wrap {
+  width: 110px;
+  height: 110px;
+  margin: 0 auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 50%;
+  border: 3px solid #e2e8f0;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.feedback-dialog-card.success .feedback-anim-wrap {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+}
+
+.feedback-dialog-card.blocked .feedback-anim-wrap {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.feedback-anim {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+}
+
+.feedback-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.01em;
+}
+
+.feedback-dialog-card.success .feedback-title {
+  color: #15803d;
+}
+
+.feedback-dialog-card.blocked .feedback-title {
+  color: #b91c1c;
+}
+
+.feedback-plate {
+  display: inline-block;
+  background: #0f172a;
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 4px 14px;
+  border-radius: 6px;
+  border: 2px solid #334155;
+  margin: 4px auto 10px;
+}
+
+.feedback-dialog-card.success .feedback-plate {
+  border-color: #22c55e;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.35);
+}
+
+.feedback-message {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0 0 16px 0;
+  line-height: 1.4;
+}
+
+.feedback-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.feedback-progress-fill {
+  width: 100%;
+  height: 100%;
+  transition: width 2.7s linear;
+}
+
+.feedback-dialog-card.success .feedback-progress-fill {
+  background: #16a34a;
+}
+
+.feedback-dialog-card.blocked .feedback-progress-fill {
+  background: #dc2626;
+}
+

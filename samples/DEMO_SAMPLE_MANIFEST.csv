@@ -1,4 +1,5 @@
 filename,plate,expected_case,image_type,source,date_basis
+00_DEMO_VALID_WB42AV8012_PLATE.png,WB42AV8012,DEMO_VALID,plate closeup,synthetic demo,2026-10-13
 01_DEMO_VALID_DL00DE0002_PLATE.png,DL00DE0002,DEMO_VALID,plate closeup,synthetic demo,2026-10-12
 01_DEMO_VALID_DL00DE0002_CAR.png,DL00DE0002,DEMO_VALID,illustrated vehicle front,synthetic demo,2026-10-12
 02_DEMO_VALID_UP00DE0006_PLATE.png,UP00DE0006,DEMO_VALID,plate closeup,synthetic demo,2026-10-12

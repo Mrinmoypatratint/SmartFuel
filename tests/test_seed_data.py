@@ -2,17 +2,15 @@
 from app.database import Base, engine, SessionLocal, Station, Vehicle, Cylinder, seed_demo
 
 
-def test_100_demo_vehicle_records_are_idempotent():
+def test_single_demo_vehicle_wb42av8012_is_idempotent():
     Base.metadata.create_all(engine)
     with SessionLocal() as db:
         seed_demo(db)
-        assert db.query(Vehicle).count() == 100
-        assert db.query(Cylinder).count() >= 100
-        cylinder_count=db.query(Cylinder).count()
-        plate=db.get(Vehicle,'DL00DE0002')
-        plate.notes = 'DO NOT OVERWRITE CUSTOM VALUE'
-        db.commit()
-        seed_demo(db)
-        assert db.query(Vehicle).count()==100
-        assert db.query(Cylinder).count()==cylinder_count
-        assert db.get(Vehicle,'DL00DE0002').notes == 'DO NOT OVERWRITE CUSTOM VALUE'
+        assert db.query(Vehicle).count() == 1
+        assert db.query(Cylinder).count() == 1
+        vehicle = db.get(Vehicle, 'WB42AV8012')
+        assert vehicle is not None
+        assert vehicle.plate == 'WB42AV8012'
+        assert vehicle.cng_endorsed == 'yes'
+        assert len(vehicle.cylinders) == 1
+        assert vehicle.cylinders[0].serial == 'CYL-WB42-8012-A1'

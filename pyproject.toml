@@ -30,7 +30,7 @@ ignore = [
 ]
 
 [tool.pytest.ini_options]
-minversion = "8.0"
+minversion = "7.0"
 addopts = "-v --tb=short"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
