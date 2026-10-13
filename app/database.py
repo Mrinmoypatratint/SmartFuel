@@ -82,7 +82,8 @@ class Audit(Base):
     details=Column(String(350),default='')
 
 def seed_demo(db):
-    """Seed the database with the demonstration station and the single authorized vehicle entry 'WB42AV8012'."""
+    """Seed the database with demonstration station, standard demo records, and WB42AV8012."""
+    import csv
     station = db.query(Station).filter_by(name='Demo IGL CNG Station').order_by(Station.id).first()
     if station is None:
         station = Station(name='Demo IGL CNG Station', city='Durgapur', camera_name='USB / Ingress Camera')
@@ -91,9 +92,31 @@ def seed_demo(db):
 
     target_plate = 'WB42AV8012'
 
-    # Ensure WB42AV8012 is the only vehicle record in the database
-    db.query(Vehicle).filter(Vehicle.plate != target_plate).delete(synchronize_session=False)
-    db.query(Cylinder).filter(Cylinder.plate != target_plate).delete(synchronize_session=False)
+    if os.getenv('DEMO_SINGLE_VEHICLE', '0') == '1':
+        db.query(Vehicle).filter(Vehicle.plate != target_plate).delete(synchronize_session=False)
+        db.query(Cylinder).filter(Cylinder.plate != target_plate).delete(synchronize_session=False)
+    else:
+        folder = ROOT / 'seed_data'
+        vehicles_path = folder / 'vehicles_100.csv'
+        cylinders_path = folder / 'cylinders_100.csv'
+        if vehicles_path.is_file() and cylinders_path.is_file():
+            with vehicles_path.open(newline='', encoding='utf-8') as f:
+                vehicle_rows = list(csv.DictReader(f))
+            with cylinders_path.open(newline='', encoding='utf-8') as f:
+                cylinder_rows = list(csv.DictReader(f))
+            present = {x[0] for x in db.query(Vehicle.plate).all()}
+            created = set()
+            for row in vehicle_rows:
+                if row['plate'] not in present:
+                    db.add(Vehicle(plate=row['plate'], model=row['model'], cng_endorsed=row['cng_endorsed'],
+                                   notes=row['notes'], station_id=station.id))
+                    created.add(row['plate'])
+            db.flush()
+            for row in cylinder_rows:
+                if row['plate'] in created:
+                    db.add(Cylinder(plate=row['plate'], serial=row['serial'], last_test=row['last_test'],
+                                    expiry=row['expiry'], certificate_ref=row['certificate_ref']))
+            db.flush()
 
     existing = db.get(Vehicle, target_plate)
     if existing is None:

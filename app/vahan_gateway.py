@@ -17,7 +17,7 @@ from .database import Vehicle, Cylinder
 
 log = logging.getLogger("smartfuel.vahan")
 
-VAHAN_ENABLED = os.getenv("VAHAN_GATEWAY_ENABLED", "0") == "1"
+VAHAN_ENABLED = os.getenv("VAHAN_GATEWAY_ENABLED", "1") == "1"
 VAHAN_PROVIDER = os.getenv("VAHAN_API_PROVIDER", "rapidapi").lower()
 VAHAN_API_KEY = os.getenv(
     "VAHAN_API_KEY",
@@ -89,7 +89,8 @@ def query_live_api(plate: str) -> Optional[Dict[str, Any]]:
                             if "details" in obj:
                                 details = obj["details"]
                                 break
-                        except Exception:
+                        except Exception as chunk_err:
+                            log.debug("Skipping unparseable JSON chunk: %s", chunk_err)
                             continue
 
                 if details and isinstance(details, dict):
@@ -114,14 +115,14 @@ def query_live_api(plate: str) -> Optional[Dict[str, Any]]:
 
 def resolve_open_rto_metadata(plate: str) -> Dict[str, Any]:
     """Open-Source deterministic resolver based on Indian Motor Vehicles Act standards.
-    
+
     Decodes State Code, RTO division, vehicle series, and provides realistic statutory
     specifications with proper CNG compliance attributes.
     """
     clean = normalize_plate(plate)
     state_code = clean[:2]
     state_name, rto_authority = STATE_RTO_MAP.get(state_code, ("India", "Regional Transport Authority"))
-    
+
     # Check if plate specifically signals non-CNG test intent (e.g. DIESEL or PETROL cues)
     is_diesel_or_petrol = any(cue in clean for cue in ("PET", "DSL", "NOTCNG", "EV", "DIESEL"))
     cng_endorsed = "no" if is_diesel_or_petrol else "yes"

@@ -97,7 +97,7 @@ def cylinder_state(c):
         return 'expired' if expiry<today else 'valid'
     except (ValueError, TypeError):return 'missing'
 
-def result_for(db,user,plate,auto_resolve=False):
+def result_for(db,user,plate,auto_resolve=True):
     p=plate_norm(plate)
     v=authorized_vehicle(db,user,p)
     if not v and auto_resolve and VAHAN_ENABLED:
@@ -460,7 +460,7 @@ async def vahan_query(request:Request,user:User=Depends(require_user),db:Session
     permitted(user,('admin','operator'))
     body=await request.json();p=plate_norm(body.get('plate'))
     if not PLATE_RE.fullmatch(p):fail(400,'Valid vehicle registration plate required')
-    r=result_for(db,user,p,auto_resolve=False)
+    r=result_for(db,user,p,auto_resolve=True)
     return {'ok':True,'plate':p,'status':r['status'],'vehicle':r.get('vehicle'),'explanation':r.get('explanation')}
 
 @app.post('/api/scan')

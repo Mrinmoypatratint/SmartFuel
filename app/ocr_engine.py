@@ -9,6 +9,9 @@ import pytesseract
 from pytesseract import Output
 from PIL import Image, ImageOps, UnidentifiedImageError
 import io
+import logging
+
+log = logging.getLogger("smartfuel.ocr")
 
 RE_PLATE = re.compile(r"[A-Z]{2}[0-9]{2}[A-Z]{1,3}[0-9]{4}")
 RE_BH = re.compile(r"[0-9]{2}BH[0-9]{4}[A-Z]{1,2}")
@@ -130,8 +133,8 @@ def sample_match_fallback(image_bytes):
                 if sample_file.is_file() and hashlib.sha256(sample_file.read_bytes()).hexdigest() == target_hash:
                     p = row.get("plate", "")
                     return {"plate": p, "confidence": 98.5, "method": "Sample Verification", "raw_text": p, "candidates": [{"plate": p, "confidence": 98.5, "region": "sample image"}]}
-    except Exception:
-        pass
+    except Exception as exc:
+        log.debug("Sample manifest check exception: %s", exc)
     return None
 
 def rapid_ocr_extract(bgr, region_label="detected text"):

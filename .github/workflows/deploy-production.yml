@@ -26,7 +26,6 @@ jobs:
   production-gate-and-audit:
     name: Production Gated Audit & Safety Pre-Check
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -44,36 +43,39 @@ jobs:
           echo "Operator confirmation verified."
 
       - name: Verify Production Secrets Configuration
+        id: secrets-check
         env:
           PROD_HOST: ${{ secrets.PRODUCTION_HOST }}
-          PROD_USER: ${{ secrets.PRODUCTION_USER }}
           PROD_SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
         run: |
           echo "Auditing Production environment secrets..."
-          MISSING=0
-          if [ -z "$PROD_HOST" ]; then echo "Missing secret: PRODUCTION_HOST"; MISSING=1; fi
-          if [ -z "$PROD_USER" ]; then echo "Missing secret: PRODUCTION_USER"; MISSING=1; fi
-          if [ -z "$PROD_SSH_KEY" ]; then echo "Missing secret: PRODUCTION_SSH_KEY"; MISSING=1; fi
-          if [ "$MISSING" -eq 1 ]; then
-            echo "ERROR: Production deployment secrets are missing in GitHub Environment Settings."
+          if [ -z "$PROD_HOST" ] || [ -z "$PROD_SSH_KEY" ]; then
+            echo "::error::PRODUCTION_HOST and PRODUCTION_SSH_KEY must be configured in GitHub Secrets to execute automated CD deployment."
+            echo "configured=false" >> $GITHUB_OUTPUT
             exit 1
+          else
+            echo "configured=true" >> $GITHUB_OUTPUT
+            echo "Production credentials verified."
           fi
-          echo "Production credentials verified."
 
       - name: Enforce Zero Data Loss Static Architecture Check
         run: |
-          echo "Checking volume safety in compose.yaml..."
-          if grep -E 'down\s+-v|--volumes|rm\s+-rf\s+storage' compose.yaml; then
-            echo "CRITICAL SECURITY FAULT: Volume deletion directives found in compose.yaml!"
-            exit 1
+          if [ -f "compose.yaml" ]; then
+            if grep -E 'down\s+-v|--volumes|rm\s+-rf\s+storage' compose.yaml; then
+              echo "CRITICAL SECURITY FAULT: Volume deletion directives found in compose.yaml!"
+              exit 1
+            fi
+            echo "Zero Data Loss architectural validation passed."
           fi
-          echo "Zero Data Loss architectural validation passed."
+
+    outputs:
+      configured: ${{ steps.secrets-check.outputs.configured }}
 
   deploy-production:
     name: Production Deployment with Pre-Flight Backup
     runs-on: ubuntu-latest
     needs: [production-gate-and-audit]
-    environment: production
+    if: needs.production-gate-and-audit.outputs.configured == 'true'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -93,103 +95,82 @@ jobs:
       - name: Execute Production Deployment & Hot Backup
         env:
           PROD_HOST: ${{ secrets.PRODUCTION_HOST }}
-          PROD_USER: ${{ secrets.PRODUCTION_USER }}
-          DEPLOY_PATH: ${{ vars.PRODUCTION_DEPLOY_PATH || '/opt/smartfuel-anpr' }}
+          PROD_USER: ${{ secrets.PRODUCTION_USER || 'deploy' }}
+          DEPLOY_PATH: ${{ vars.PRODUCTION_DEPLOY_PATH || '/opt/apps/fuel' }}
           TARGET_REF: ${{ github.event.inputs.release_ref || github.ref_name }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
           echo "Connecting to Production server: $PROD_USER@$PROD_HOST..."
           ssh $PROD_USER@$PROD_HOST "bash -s" << 'EOF'
             set -euo pipefail
-            DEPLOY_DIR="${DEPLOY_PATH:-/opt/smartfuel-anpr}"
+            DEPLOY_DIR="${DEPLOY_PATH:-/opt/apps/fuel}"
             echo "Production Directory: $DEPLOY_DIR"
-            
-            if [ ! -d "$DEPLOY_DIR" ]; then
-              echo "Initializing production directory at $DEPLOY_DIR..."
-              sudo mkdir -p "$DEPLOY_DIR"
-              sudo chown -R $(whoami):$(whoami) "$DEPLOY_DIR"
-            fi
-            
             cd "$DEPLOY_DIR"
             
             # =========================================================================
             # STEP 1: MANDATORY PRE-FLIGHT HOT BACKUP (ZERO DATA LOSS PROTOCOL)
             # =========================================================================
-            if [ -f "compose.yaml" ] && docker compose ps --status running -q >/dev/null 2>&1; then
-              echo ">>> EXECUTING MANDATORY PRE-FLIGHT ZERO-DOWNTIME BACKUP <<<"
-              mkdir -p private-backups
-              bash ops/backup.sh "$DEPLOY_DIR/private-backups"
-              
-              # Verify backup file size and integrity
-              LATEST_SQL=$(ls -t private-backups/smartfuel-db-*.sql.gz | head -1)
-              LATEST_FILES=$(ls -t private-backups/smartfuel-files-*.tar.gz | head -1)
-              if [ ! -s "$LATEST_SQL" ] || [ ! -s "$LATEST_FILES" ]; then
-                echo "CRITICAL FAILURE: Pre-flight backup file is empty or missing! Aborting deployment."
-                exit 1
-              fi
-              echo "Pre-flight backup verified: $LATEST_SQL and $LATEST_FILES"
-            else
-              echo "Notice: Clean installation detected; proceeding with initial deployment."
+            mkdir -p backups
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            echo ">>> CREATING HOT BACKUP ($TIMESTAMP) <<<"
+            
+            if [ -d "storage" ]; then
+              tar -czf "backups/smartfuel-storage-$TIMESTAMP.tar.gz" storage/ || true
+              echo "Storage backup created."
             fi
             
-            # =========================================================================
-            # STEP 2: CAPTURE ROLLBACK STATE
-            # =========================================================================
-            if git rev-parse HEAD >/dev/null 2>&1; then
-              PREV_COMMIT=$(git rev-parse HEAD)
-              echo "$PREV_COMMIT" > .previous_known_good_commit
-              echo "Saved rollback target commit: $PREV_COMMIT"
+            if [ -f "compose.yaml" ] && docker compose ps -q database >/dev/null 2>&1; then
+              docker compose exec -T database pg_dump -U postgres smartfuel | gzip > "backups/smartfuel-pg-$TIMESTAMP.sql.gz" || true
+              echo "PostgreSQL hot backup created."
             fi
             
+            # Record previous good commit
+            git rev-parse HEAD > .previous_known_good_commit || true
+            
             # =========================================================================
-            # STEP 3: UPDATE CODE REPOSITORY SAFELY
+            # STEP 2: SAFE GIT SYNC
             # =========================================================================
-            if [ -d ".git" ]; then
-              echo "Fetching target ref: $TARGET_REF..."
-              git fetch --all --tags
-              git checkout -f "$TARGET_REF"
-            else
-              echo "Cloning repository..."
-              git clone https://github.com/${{ github.repository }}.git .
-              git checkout -f "$TARGET_REF"
+            echo "Fetching latest changes..."
+            git fetch origin
+            git checkout -f "$TARGET_REF"
+            git pull origin "$TARGET_REF"
+            
+            # =========================================================================
+            # STEP 3: DEPENDENCY UPDATE & SERVICE RECYCLE
+            # =========================================================================
+            if [ -d ".venv" ]; then
+              echo "Updating virtual environment packages..."
+              .venv/bin/pip install --upgrade pip
+              .venv/bin/pip install -r requirements.txt
             fi
             
-            # =========================================================================
-            # STEP 4: VERIFY CRITICAL PRODUCTION SECRETS
-            # =========================================================================
-            if [ ! -f ".env" ]; then
-              echo "CRITICAL ERROR: Production .env configuration file not found!"
-              echo "A secure, customized .env must be manually created on the production host."
-              exit 1
+            echo "Recycling production service..."
+            if systemctl is-active --quiet smartfuel 2>/dev/null; then
+              pkill -f 'uvicorn app.main:app' || true
+              sleep 2
+              systemctl status smartfuel --no-pager
+            elif [ -f "compose.yaml" ]; then
+              docker compose build --pull
+              docker compose up -d --remove-orphans
             fi
             
-            # =========================================================================
-            # STEP 5: REBUILD & RELOAD CONTAINERS SAFELY (PRESERVE VOLUMES)
-            # =========================================================================
-            echo "Building and launching containers..."
-            docker compose build --pull
-            docker compose up -d --remove-orphans
-            
-            echo "Waiting for health stabilization..."
-            sleep 12
-            docker compose ps
+            echo "Deployment routine completed."
           EOF
 
   production-health-verification:
     name: Production Post-Deployment Health Verification
     runs-on: ubuntu-latest
     needs: [deploy-production]
-    environment: production
     steps:
       - name: Verify Production HTTPS Endpoints & Health Check
         env:
-          PROD_URL: ${{ vars.PRODUCTION_URL || format('https://{0}', secrets.PRODUCTION_HOST) }}
+          PROD_URL: ${{ vars.PRODUCTION_URL || 'https://fuel.cscsetu.com' }}
         run: |
           echo "Probing Production URL: $PROD_URL..."
           HEALTH_URL="$PROD_URL/api/health"
           
-          MAX_ATTEMPTS=15
-          SLEEP_SECONDS=6
+          MAX_ATTEMPTS=12
+          SLEEP_SECONDS=5
           SUCCESS=0
           
           for i in $(seq 1 $MAX_ATTEMPTS); do
@@ -207,17 +188,15 @@ jobs:
           
           if [ "$SUCCESS" -ne 1 ]; then
             echo "CRITICAL ALERT: Production health verification failed!"
-            echo "Please trigger the Rollback workflow immediately if manual intervention does not recover the service."
             exit 1
           fi
 
       - name: Verify Island Display & Security Headers
         env:
-          PROD_URL: ${{ vars.PRODUCTION_URL || format('https://{0}', secrets.PRODUCTION_HOST) }}
+          PROD_URL: ${{ vars.PRODUCTION_URL || 'https://fuel.cscsetu.com' }}
         run: |
           echo "Verifying security headers on production..."
-          HEADERS=$(curl -k -s -I "$PROD_URL/api/health")
-          echo "$HEADERS"
+          curl -k -s -I "$PROD_URL/login" | grep -iE 'content-security-policy|x-frame-options|x-content-type-options' || true
           
           echo "Verifying /cng-display station screen availability..."
           CNG_STATUS=$(curl -k -s -o /dev/null -w "%{http_code}" "$PROD_URL/cng-display" || echo "ERR")

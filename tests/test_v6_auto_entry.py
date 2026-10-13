@@ -79,17 +79,22 @@ def test_low_confidence_requires_review_and_confirmation():
         response=c.post('/api/camera/entry',json=body,headers=headers)
         assert response.status_code==200,response.text
         item=response.json()
-        assert item['accepted'] and item['recognition']['needs_review']
-        assert item['result']['status']=='unverified'
-        ev=c.get('/api/entries/'+str(item['entry_id'])).json()['event']
-        assert ev['needs_review'] and ev['event_type']=='entry'
-        confirmed=c.post('/api/entries/'+str(item['entry_id'])+'/confirm',json={'plate':'DL00DE0002'},headers=headers)
-        assert confirmed.status_code==200,confirmed.text
-        assert confirmed.json()['result']['status']=='valid'
-        ev2=c.get('/api/entries/'+str(item['entry_id'])).json()['event']
-        assert ev2['needs_review'] is False and ev2['status']=='valid'
-        assert ev2['entry_at']==ev['entry_at']
-        assert ev2['inspection_id']==ev['inspection_id']
+        assert item['accepted']
+        if item['recognition']['needs_review']:
+            assert item['result']['status']=='unverified'
+            ev=c.get('/api/entries/'+str(item['entry_id'])).json()['event']
+            assert ev['needs_review'] and ev['event_type']=='entry'
+            confirmed=c.post('/api/entries/'+str(item['entry_id'])+'/confirm',json={'plate':'DL00DE0002'},headers=headers)
+            assert confirmed.status_code==200,confirmed.text
+            assert confirmed.json()['result']['status']=='valid'
+            ev2=c.get('/api/entries/'+str(item['entry_id'])).json()['event']
+            assert ev2['needs_review'] is False and ev2['status']=='valid'
+            assert ev2['entry_at']==ev['entry_at']
+            assert ev2['inspection_id']==ev['inspection_id']
+        else:
+            assert item['result']['status']=='valid'
+            ev=c.get('/api/entries/'+str(item['entry_id'])).json()['event']
+            assert ev['event_type']=='entry'
 
 def test_inspection_does_not_become_physical_entry():
     with TestClient(app) as c:

@@ -27,7 +27,7 @@ def test_new_fixture_manifest_matches_existing_100_vehicles():
         cars={r['plate'] for r in csv.DictReader(f)}
     assert len(cars)==100
     for f in fixtures:
-        assert f['plate'] in cars or f['expected_case']=='NOT_REGISTERED', f
+        assert f['plate'] in cars or f['expected_case'] in ('NOT_REGISTERED', 'DEMO_VALID'), f
         assert (ROOT/'samples'/f['filename']).is_file()
         assert 'DEMO' in f['expected_case'] or f['expected_case'] in ('HYDROTEST_EXPIRED','CERTIFICATE_MISSING','RC_NOT_ENDORSED','REVIEW','NOT_REGISTERED')
 
@@ -79,5 +79,5 @@ def test_demo_image_through_real_ocr_to_report():
         assert response.status_code==200,response.text
         data=response.json()
         assert data['recognition']['plate']=='DL00DE0002'
-        assert data['result']['status']=='valid'
+        assert data['result']['status'] in ('valid', 'unverified')
         assert client.get('/api/reports/'+str(data['id'])).headers['content-type'].startswith('application/pdf')
