@@ -29,17 +29,17 @@ const DICT = {
     dirTitle3: 'MODBUS-RTU Hardware Dispenser Interlock',
     dirDesc3: 'Sub-100ms hardware electrical relay cut-off switch wired directly into dispenser solenoid valves for instantaneous fuel cutoff.',
     dirTitle4: 'Cryptographic Electronic Safety Ledger (SHA-256)',
-    dirDesc4: 'Immutable audit logs of all fueling sessions, safety decisions, operator timestamps, and dispenser telemetry.',
+    dirDesc4: 'Immutable audit logs of all fueling sessions, safety decisions, administrator timestamps, and dispenser telemetry.',
     authBadge: 'ENTERPRISE SECURE CONSOLE',
-    signInHeading: 'अधिकारी / ऑपरेटर लॉगिन | Officer Sign In',
-    signInSub: 'Enter your registered credentials to access the station safety management console.',
+    signInHeading: 'व्यवस्थापक लॉगिन | Administrator Sign In',
+    signInSub: 'Enter your administrator credentials to access the station safety management console.',
     lblEmail: 'OFFICIAL SERVICE EMAIL ID / उपयोगकर्ता आईडी',
     lblPassword: 'SECURITY PASSWORD / सुरक्षा पासवर्ड',
     captchaTitle: 'SECURITY CAPTCHA VERIFICATION / सुरक्षा कोड',
     btnSignIn: 'सुरक्षित लॉगिन करें | SECURE SIGN IN →',
     quickCreds: 'मूल्यांकन हेतु त्वरित क्रेडेंशियल (Demo Fill):',
     secTitle: '⚠️ गोपनीय सूचना / SECURITY POLICY NOTICE:',
-    secText: 'This is a protected enterprise safety console. Authorized operator access only. All user sessions, activities, and network IP addresses are monitored and logged for security compliance.'
+    secText: 'This is a protected enterprise safety console. Authorized administrator access only. All user sessions, activities, and network IP addresses are monitored and logged for security compliance.'
   },
   hi: {
     govName: 'स्मार्टफ्यूल टेक्नोलॉजीज',
@@ -59,17 +59,17 @@ const DICT = {
     dirTitle3: 'मोडबस-आरटीयू हार्डवेयर सोलेनोइड इंटरलॉक',
     dirDesc3: 'डिस्पेंसर सोलेनोइड वाल्व में सीधे जुड़े सब-100 मिलीसेकंड रिले कट-ऑफ स्विच द्वारा आपातकालीन शट-ऑफ।',
     dirTitle4: 'क्रिप्टोग्राफिक इलेक्ट्रॉनिक सुरक्षा लेज़र (एसएचए-256)',
-    dirDesc4: 'सभी ईंधन वितरण सत्रों, सुरक्षा निर्णयों और ऑपरेटर समय का अपरिवर्तनीय डिजिटल ऑडिट रिकॉर्ड।',
+    dirDesc4: 'सभी ईंधन वितरण सत्रों, सुरक्षा निर्णयों और व्यवस्थापक समय का अपरिवर्तनीय डिजिटल ऑडिट रिकॉर्ड।',
     authBadge: 'एंटरप्राइज सुरक्षित कंसोल',
-    signInHeading: 'अधिकारी / ऑपरेटर लॉगिन | Officer Sign In',
-    signInSub: 'स्टेशन सुरक्षा प्रबंधन कंसोल तक पहुंचने हेतु अपना पंजीकृत आईडी एवं पासवर्ड दर्ज करें।',
+    signInHeading: 'व्यवस्थापक लॉगिन | Administrator Sign In',
+    signInSub: 'स्टेशन सुरक्षा प्रबंधन कंसोल तक पहुंचने हेतु अपना व्यवस्थापक आईडी एवं पासवर्ड दर्ज करें।',
     lblEmail: 'आधिकारिक सेवा ईमेल आईडी / उपयोगकर्ता आईडी',
     lblPassword: 'सुरक्षा पासवर्ड / पासवर्ड',
     captchaTitle: 'सुरक्षा कैप्चा सत्यापन / सुरक्षा कोड',
     btnSignIn: 'सुरक्षित लॉगिन करें | SECURE SIGN IN →',
     quickCreds: 'मूल्यांकन हेतु त्वरित क्रेडेंशियल (Demo Fill):',
     secTitle: '⚠️ गोपनीय सूचना / SECURITY POLICY NOTICE:',
-    secText: 'यह एक संरक्षित एंटरप्राइज सुरक्षा कंसोल है। केवल अधिकृत ऑपरेटरों हेतु। सुरक्षा अनुपालन के तहत सभी उपयोगकर्ता सत्र, गतिविधियां और आईपी लॉग की जाती हैं।'
+    secText: 'यह एक संरक्षित एंटरप्राइज सुरक्षा कंसोल है। केवल अधिकृत व्यवस्थापक हेतु। सुरक्षा अनुपालन के तहत सभी उपयोगकर्ता सत्र, गतिविधियां और आईपी लॉग की जाती हैं।'
   }
 };
 
@@ -164,14 +164,7 @@ document.querySelectorAll('.gov-role-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.gov-role-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const role = btn.dataset.role;
-    if (role === 'admin') {
-      document.getElementById('btnCredAdmin')?.click();
-    } else if (role === 'operator') {
-      document.getElementById('btnCredOperator')?.click();
-    } else if (role === 'inspector') {
-      document.getElementById('btnCredAuditor')?.click();
-    }
+    document.getElementById('btnCredAdmin')?.click();
   });
 });
 
@@ -216,24 +209,6 @@ document.getElementById('btnCredAdmin')?.addEventListener('click', () => {
   if (err) err.style.display = 'none';
   document.querySelectorAll('.gov-role-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('roleBtnAdmin')?.classList.add('active');
-});
-document.getElementById('btnCredOperator')?.addEventListener('click', () => {
-  document.getElementById('email').value = 'operator@example.test';
-  document.getElementById('password').value = 'DemoOperatorPassword!123';
-  document.getElementById('captchaInput').value = currentCaptcha;
-  const err = document.getElementById('error');
-  if (err) err.style.display = 'none';
-  document.querySelectorAll('.gov-role-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('roleBtnOperator')?.classList.add('active');
-});
-document.getElementById('btnCredAuditor')?.addEventListener('click', () => {
-  document.getElementById('email').value = 'viewer@example.test';
-  document.getElementById('password').value = 'DemoViewerPassword!123';
-  document.getElementById('captchaInput').value = currentCaptcha;
-  const err = document.getElementById('error');
-  if (err) err.style.display = 'none';
-  document.querySelectorAll('.gov-role-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('roleBtnInspector')?.classList.add('active');
 });
 
 // Login Form Submit with CAPTCHA verification
