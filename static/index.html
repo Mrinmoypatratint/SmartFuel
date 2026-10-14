@@ -80,11 +80,44 @@
           <p id="txtInspectSub">Live Camera Auto-Detection • Optical Plate Extraction • Dual VAHAN RC & PESO Hydrotest
             Rules • Immediate Dispenser Interlock</p>
         </div>
-        <div style="display:flex;gap:8px;">
-          <a href="/cng-display" target="_blank" rel="noopener" class="btn success">📺 <span id="txtOpenKiosk">Open CNG
-              Station Display ↗</span></a>
-          <a href="/alerts/wall" target="_blank" rel="noopener" class="btn danger">🚨 <span id="txtOpenWall">Alert Wall
-              ↗</span></a>
+        <div class="header-action-btns" style="display:flex;gap:10px;align-items:center;">
+          <a href="/cng-display" target="_blank" rel="noopener" class="btn-display-kiosk" id="btnOpenKioskLink">
+            <span class="btn-kiosk-live-dot" aria-hidden="true"></span>
+            <span class="btn-kiosk-icon" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="14" x="2" y="3" rx="2" />
+                <line x1="8" x2="16" y1="21" y2="21" />
+                <line x1="12" x2="12" y1="17" y2="21" />
+              </svg>
+            </span>
+            <span class="btn-kiosk-text" id="txtOpenKiosk">Open CNG Station Display</span>
+            <span class="btn-kiosk-arrow" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
+            </span>
+          </a>
+          <a href="/alerts/wall" target="_blank" rel="noopener" class="btn-alert-wall" id="btnOpenWallLink">
+            <span class="btn-kiosk-icon alert-icon-bg" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </span>
+            <span class="btn-kiosk-text" id="txtOpenWall">Alert Wall</span>
+            <span class="btn-kiosk-arrow" aria-hidden="true">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round" stroke-linejoin="round">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
+            </span>
+          </a>
         </div>
       </div>
 
@@ -104,7 +137,7 @@
       <div class="pipeline-grid">
 
         <!-- STEP 1: LIVE CAMERA AUTO-DETECTION (USB WEBCAM) -->
-        <div class="step-card">
+        <div class="step-card step-card-camera">
           <div class="step-header">
             <div class="step-title">
               <span class="step-num">1</span>
@@ -130,42 +163,44 @@
           </div>
 
           <div class="cam-controls">
-            <div class="cam-select-row">
-              <label for="cameraSelect" style="font-size:0.78rem;font-weight:800;color:var(--gov-navy-dark);"
-                id="txtSelectCamLabel">Select Camera:</label>
-              <select id="cameraSelect">
-                <option value="">Default Webcam</option>
-              </select>
+            <div class="cam-options-bar">
+              <div class="cam-select-row">
+                <label for="cameraSelect" style="font-size:0.78rem;font-weight:800;color:var(--gov-navy-dark);"
+                  id="txtSelectCamLabel">Select Camera:</label>
+                <select id="cameraSelect">
+                  <option value="">Default Webcam</option>
+                </select>
+              </div>
+
+              <div class="toggle-group">
+                <label class="toggle-label">
+                  <input type="checkbox" id="autoScanToggle" checked>
+                  <span id="txtToggleAuto">Auto Detection</span>
+                </label>
+                <label class="toggle-label">
+                  <input type="checkbox" id="saveFramesToggle">
+                  <span id="txtToggleSave">Save Frames</span>
+                </label>
+                <label class="toggle-label">
+                  <input type="checkbox" id="beepDetectionToggle" checked>
+                  <span id="txtToggleBeep">Beep on Read</span>
+                </label>
+              </div>
             </div>
 
-            <div class="toggle-group">
-              <label class="toggle-label">
-                <input type="checkbox" id="autoScanToggle" checked>
-                <span id="txtToggleAuto">Auto Detection</span>
-              </label>
-              <label class="toggle-label">
-                <input type="checkbox" id="saveFramesToggle">
-                <span id="txtToggleSave">Save Frames</span>
-              </label>
-              <label class="toggle-label">
-                <input type="checkbox" id="beepDetectionToggle" checked>
-                <span id="txtToggleBeep">Beep on Read</span>
-              </label>
-            </div>
-
-            <div class="cam-actions">
-              <button type="button" class="btn success full" id="startCamera">▶ <span id="txtStartCam">Start
+            <div class="cam-actions-bar">
+              <button type="button" class="btn success" id="startCamera">▶ <span id="txtStartCam">Start
                   Camera</span></button>
-              <button type="button" class="btn outline full" id="stopCamera">■ <span id="txtStopCam">Stop
+              <button type="button" class="btn outline" id="stopCamera">■ <span id="txtStopCam">Stop
                   Camera</span></button>
+              <button type="button" class="btn primary" id="captureCamera" disabled>📸 <span
+                  id="txtCaptureManual">Capture & Analyze Now</span></button>
             </div>
-            <button type="button" class="btn primary full" id="captureCamera" disabled>📸 <span
-                id="txtCaptureManual">Capture & Analyze Now</span></button>
           </div>
         </div>
 
         <!-- STEP 2: IMAGE UPLOAD OPTION -->
-        <div class="step-card">
+        <div class="step-card step-card-upload">
           <div class="step-header">
             <div class="step-title">
               <span class="step-num">2</span>
@@ -192,7 +227,7 @@
               Remove</button>
           </div>
 
-          <div style="margin-top:auto;padding-top:14px;">
+          <div style="margin-top:12px;">
             <button type="button" class="btn primary full" id="analyzeUpload" disabled>🔍 <span
                 id="txtAnalyzeBtn">Analyze Image & Verify Database</span></button>
           </div>
@@ -338,67 +373,6 @@
                 Display</span></button>
           </div>
         </div>
-      </div>
-
-      <!-- LOWER SECTIONS (GALLERY, RECENT LOGS, FLOW, METRICS) -->
-      <div class="lower-sections-grid">
-
-        <!-- Sample Vehicle Images with Number Plates Gallery -->
-        <div class="gallery-card">
-          <div
-            style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gov-border-subtle);padding-bottom:8px;">
-            <div>
-              <strong style="font-size:0.95rem;color:var(--gov-navy-dark);" id="txtGalleryTitle">Sample Vehicle Images
-                with Number Plates</strong>
-              <small style="display:block;color:var(--gov-text-muted);" id="txtGallerySub">Click any sample vehicle to
-                load into the AI verification pipeline</small>
-            </div>
-            <span class="step-status-chip chip-muted" id="sampleCountBadge">59 Samples</span>
-          </div>
-          <div class="sample-tiles-grid" id="sampleTilesGrid">
-            <!-- Dynamic sample tiles will populate here -->
-          </div>
-        </div>
-
-        <!-- Sidebar: Process Flow & Additional Data Badges -->
-        <div class="info-sidebar-wrap">
-          <div class="step-card">
-            <strong style="font-size:0.9rem;color:var(--gov-navy-dark);margin-bottom:12px;"
-              id="txtProcessFlowTitle">Process Flow</strong>
-            <div class="flow-step-row"><span class="flow-step-num">1</span> <span id="flStep1">Car Enters Station
-                (Camera capture)</span></div>
-            <div class="flow-step-row"><span class="flow-step-num">2</span> <span id="flStep2">Image to Text (Offline
-                ANPR OCR)</span></div>
-            <div class="flow-step-row"><span class="flow-step-num">3</span> <span id="flStep3">Database Verification (RC
-                & Hydrotest)</span></div>
-            <div class="flow-step-row"><span class="flow-step-num">4</span> <span id="flStep4">Generate Result (YES /
-                HOLD with reasons)</span></div>
-            <div class="flow-step-row"><span class="flow-step-num">5</span> <span id="flStep5">Store Log (Traceable
-                event ledger)</span></div>
-            <div class="flow-step-row"><span class="flow-step-num">6</span> <span id="flStep6">Show on Station Display
-                (Island screen)</span></div>
-          </div>
-
-          <div class="step-card">
-            <strong style="font-size:0.9rem;color:var(--gov-navy-dark);" id="txtAdditionalDataTitle">Additional Data
-              Metrics</strong>
-            <div class="metrics-badges-grid">
-              <div class="metric-box">
-                <span id="txtMetricVeh">Sample Vehicles</span>
-                <strong id="metricVehCount">100+</strong>
-              </div>
-              <div class="metric-box">
-                <span id="txtMetricCyl">Cylinder Records</span>
-                <strong id="metricCylCount">180+</strong>
-              </div>
-              <div class="metric-box">
-                <span id="txtMetricImg">Sample Images</span>
-                <strong id="metricImgCount">59+</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
 
     </section>
@@ -586,10 +560,12 @@
           </form>
         </div>
         <div class="step-card">
-          <strong style="font-size:0.95rem;color:var(--gov-navy-dark);margin-bottom:12px;">Administrator Accounts</strong>
+          <strong style="font-size:0.95rem;color:var(--gov-navy-dark);margin-bottom:12px;">Administrator
+            Accounts</strong>
           <div id="userList" style="font-size:0.82rem;margin-bottom:16px;">Loading...</div>
           <form id="userForm" style="display:grid;gap:8px;">
-            <label style="font-size:0.75rem;font-weight:700;">Full Name: <input id="newName" placeholder="Administrator Name"
+            <label style="font-size:0.75rem;font-weight:700;">Full Name: <input id="newName"
+                placeholder="Administrator Name"
                 style="width:100%;padding:6px;border:1px solid var(--gov-border);border-radius:4px;"></label>
             <label style="font-size:0.75rem;font-weight:700;">Email: <input id="newEmail" type="email" required
                 placeholder="admin@igl.in"

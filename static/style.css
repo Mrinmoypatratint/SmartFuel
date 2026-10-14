@@ -378,16 +378,23 @@ body.high-contrast .gov-marquee-ticker {
 .chip-amber { background: var(--gov-amber-soft); color: var(--gov-amber); }
 .chip-muted { background: #f1f5f9; color: var(--gov-text-muted); }
 
-/* Step 1: Live Camera Viewfinder */
+/* Step 1: Live Camera Viewfinder (Wide Layout) */
+.step-card-camera {
+  grid-column: 1 / -1;
+}
+
 .camera-viewfinder {
   position: relative;
   background: #000;
   border-radius: var(--radius-sm);
   overflow: hidden;
+  width: 100%;
+  max-height: 480px;
   aspect-ratio: 16/9;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 auto;
 }
 .camera-viewfinder video { width: 100%; height: 100%; object-fit: cover; }
 .camera-overlay-box {
@@ -441,8 +448,21 @@ body.high-contrast .gov-marquee-ticker {
 .camera-placeholder { color: #94a3b8; text-align: center; }
 
 /* Camera Controls & Toggles */
-.cam-controls { display: grid; gap: 10px; margin-top: 14px; }
-.cam-select-row { display: flex; gap: 8px; align-items: center; }
+.cam-controls { display: grid; gap: 12px; margin-top: 14px; }
+.cam-options-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.cam-select-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1;
+  min-width: 260px;
+}
 .cam-select-row select {
   flex: 1;
   padding: 7px 10px;
@@ -451,29 +471,40 @@ body.high-contrast .gov-marquee-ticker {
   font-size: 0.82rem;
 }
 .toggle-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
   gap: 8px;
   font-size: 0.78rem;
   font-weight: 700;
+  flex-wrap: wrap;
 }
 .toggle-label {
   display: flex;
   align-items: center;
   gap: 6px;
   background: #f8fafc;
-  padding: 6px 8px;
+  padding: 6px 10px;
   border: 1px solid var(--gov-border-subtle);
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
-.cam-actions { display: flex; gap: 8px; margin-top: 4px; }
+.cam-actions-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+.cam-actions-bar button {
+  flex: 1;
+}
 
-/* Step 2: Image Upload Option */
+/* Step 2: Image Upload Option (Placed Below Camera Section) */
+.step-card-upload {
+  grid-column: 1 / -1;
+}
 .dropzone-box {
   border: 2px dashed var(--gov-border);
   border-radius: var(--radius-sm);
-  padding: 24px 16px;
+  padding: 24px 20px;
   text-align: center;
   background: #fbfcfd;
   cursor: pointer;
@@ -482,6 +513,7 @@ body.high-contrast .gov-marquee-ticker {
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  width: 100%;
 }
 .dropzone-box:hover, .dropzone-box.dragging { border-color: var(--gov-navy-primary); background: #f0f4f8; }
 .drop-icon { font-size: 1.8rem; color: var(--gov-navy-primary); }
@@ -670,6 +702,146 @@ body.high-contrast .gov-marquee-ticker {
 .btn.outline { background: #fff; border-color: var(--gov-border); color: var(--gov-navy-dark); }
 .btn.outline:hover { background: #f1f5f9; }
 .btn.full { width: 100%; }
+
+/* ==========================================================================
+   REDESIGNED MODERN ACTION BUTTONS (STATION DISPLAY & ALERT WALL)
+   ========================================================================== */
+.btn-display-kiosk {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  white-space: nowrap;
+}
+
+.btn-display-kiosk:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  color: #ffffff !important;
+}
+
+.btn-display-kiosk:hover .btn-kiosk-arrow {
+  transform: translate(2px, -2px);
+}
+
+.btn-display-kiosk:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+}
+
+/* Pulsing live dot */
+.btn-kiosk-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a7f3d0;
+  box-shadow: 0 0 0 0 rgba(167, 243, 208, 0.7);
+  animation: kioskPulse 1.8s infinite;
+  display: inline-block;
+}
+
+@keyframes kioskPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(167, 243, 208, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(167, 243, 208, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(167, 243, 208, 0);
+  }
+}
+
+.btn-kiosk-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.18);
+  flex-shrink: 0;
+}
+
+.btn-kiosk-icon svg {
+  display: block;
+  stroke: #ffffff;
+}
+
+.btn-kiosk-text {
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.btn-kiosk-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0.9;
+}
+
+.btn-kiosk-arrow svg {
+  display: block;
+  stroke: #ffffff;
+}
+
+/* Alert Wall companion button */
+.btn-alert-wall {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 700;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 3px 10px rgba(220, 38, 38, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
+}
+
+.btn-alert-wall:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  box-shadow: 0 6px 18px rgba(220, 38, 38, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  color: #ffffff !important;
+}
+
+.btn-alert-wall:hover .btn-kiosk-arrow {
+  transform: translate(2px, -2px);
+}
+
+.btn-alert-wall:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.25);
+}
+
+.alert-icon-bg {
+  background: rgba(255, 255, 255, 0.18);
+}
 
 /* ==========================================================================
    4. LOWER SECTIONS (DEMO GALLERY, RECENT LOGS, FLOW, METRICS)

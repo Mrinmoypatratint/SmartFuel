@@ -1,123 +1,182 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>SmartFuel | CNG Station Attendant Decision Display</title>
+  <title>SmartFuel | CNG Station Attendant Decision Display (42" Kiosk)</title>
   <link rel="stylesheet" href="/static/style.css">
   <link rel="stylesheet" href="/static/cng-display.css">
-  <style>
-    .kiosk-gov-strip {
-      background: #0c2340;
-      color: #fff;
-      padding: 6px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.8rem;
-      border-bottom: 2px solid #d97706;
-    }
-  </style>
 </head>
-<body class="cng-kiosk">
 
+<body class="cng-kiosk-42">
+
+  <!-- 1. Top Govt & PESO Mandate Strip (Ultra-compact) -->
   <div class="kiosk-gov-strip">
-    <div style="display:flex;align-items:center;gap:8px;font-weight:700;">
-      <span>🇮🇳</span>
-      <span>भारत सरकार | Ministry of Petroleum & Natural Gas • PESO</span>
+    <div class="gov-left">
+      <span class="flag-icon">🇮🇳</span>
+      <span class="gov-title">भारत सरकार | Ministry of Petroleum &amp; Natural Gas • PESO</span>
+      <span class="gov-sep">•</span>
+      <span class="gov-mandate">CNG Island Safety Interlock (Rule 35, Gas Cylinders Rules 2016)</span>
     </div>
-    <div style="font-weight:700;color:#fef3c7;">
-      CNG Island Safety Interlock Screen (Rule 35, Gas Cylinders Rules 2016)
-    </div>
-  </div>
-
-  <div class="gov-marquee-strip" style="border-radius:0;box-shadow:none;border-top:none;">
-    <div class="gov-marquee-label" style="background:#04127b;padding:6px 12px;font-size:0.7rem;">
-      <span>📢</span>
-      <span>ISLAND SAFETY NOTICE</span>
-    </div>
-    <div class="gov-marquee-content" style="background:#fff8e1;">
-      <marquee behavior="scroll" direction="left" scrollamount="5" onmouseover="this.stop();" onmouseout="this.start();" class="gov-marquee-ticker" style="font-size:0.75rem;font-weight:700;color:#78350f;">
-        🔴 Mandated under Rule 35, Gas Cylinders Rules 2016: CNG dispensing is strictly prohibited for vehicles with expired cylinder hydrotesting certificates. Dispenser solenoid automatically locks upon negative compliance detection.
-      </marquee>
+    <div class="gov-right">
+      <span class="live-beacon">● SYSTEM ACTIVE</span>
+      <span id="connection" class="conn-status">Active Telemetry Stream</span>
     </div>
   </div>
 
+  <!-- 2. Kiosk Header: Branding, Live Statistics (Scanned & Passed), Station Filter, Clock -->
   <header class="kiosk-top">
     <div class="identity">
-      <img src="/static/smartfuel-logo.png" alt="SmartFuel Emblem" style="width:40px;height:40px;border-radius:50%;border:2px solid var(--gov-saffron);background:#fff;object-fit:contain;">
-      <div>
+      <img src="/static/smartfuel-logo.png" alt="SmartFuel" class="kiosk-brand-logo">
+      <div class="brand-text">
         <strong>SmartFuel AI-ANPR</strong>
-        <span style="font-weight:700;color:var(--gov-navy-dark);">CNG Station Attendant Display • सीएनजी स्टेशन डिस्प्ले</span>
+        <span>CNG Island Dispenser Safety Terminal • सीएनजी स्टेशन डिस्प्ले</span>
       </div>
     </div>
-    <div class="kiosk-tools">
-      <span class="kiosk-clock" id="clock">--:--:--</span>
-      <button id="goFullscreen" class="btn outline">Full screen</button>
-      <a class="btn primary" href="/">← Dashboard</a>
-    </div>
-  </header>
 
-  <main class="kiosk-main">
-    <div class="kiosk-header">
-      <div>
-        <div class="eyebrow" style="color:var(--gov-navy-primary);font-weight:900;">HIGH-VISIBILITY ISLAND DECISION BOARD</div>
-        <h1 style="color:var(--gov-navy-dark);font-size:1.8rem;margin:4px 0 0;">CNG Compliance Verification Status</h1>
-        <p style="color:var(--gov-text-muted);">Real-Time Automated Inspection & Solenoid Interlock Telemetry</p>
+    <!-- Live Forecourt Metrics: Total Scanned & Total Passed All Criteria -->
+    <div class="kiosk-stats-cluster">
+      <div class="stat-pill total-scanned-pill">
+        <div class="stat-pill-icon">🚗</div>
+        <div class="stat-pill-data">
+          <span class="stat-pill-num" id="totalScanned">--</span>
+          <span class="stat-pill-label">TOTAL VEHICLES SCANNED</span>
+        </div>
       </div>
-      <div class="kiosk-filter">
-        <label for="station" style="font-weight:800;color:var(--gov-navy-dark);">Monitoring Station:</label>
-        <select id="station" style="padding:8px 12px;border:1px solid var(--gov-border);border-radius:4px;font-weight:700;">
+
+      <div class="stat-pill total-passed-pill">
+        <div class="stat-pill-icon">✅</div>
+        <div class="stat-pill-data">
+          <span class="stat-pill-num" id="totalPassed">--</span>
+          <span class="stat-pill-label">PASSED ALL CRITERIA</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monitoring Station & Tools -->
+    <div class="kiosk-tools">
+      <div class="station-select-box">
+        <label for="station">STATION:</label>
+        <select id="station">
           <option value="">Select station</option>
         </select>
       </div>
+      <span class="kiosk-clock" id="clock">--:--:--</span>
+      <button id="goFullscreen" class="btn outline kiosk-btn" title="Toggle Fullscreen">⛶ Full Screen</button>
+      <a class="btn primary kiosk-btn" href="/">← Dashboard</a>
     </div>
+  </header>
 
-    <div class="display-main" id="displayMain">
-      <section class="decision-hero waiting" id="hero">
+  <!-- 3. Main 42-inch Screen Dashboard Grid (100% Height, Zero Scrolling) -->
+  <main class="kiosk-main-42">
+    <div class="display-grid-42">
+
+      <!-- LEFT COLUMN: Active Status (7.2), Vehicle Plate, Captured Photo with Plate (7.3), Decision Outcome -->
+      <section class="kiosk-panel-left decision-hero waiting" id="hero">
+        
+        <!-- 7.2 Active Status Option in Blue Section Area -->
+        <div class="active-status-bar" id="activeStatusBar">
+          <div class="active-status-pulse">
+            <span class="active-dot" id="activePulseDot"></span>
+            <span class="active-label" id="activeStatusLabel">CURRENT PROCESS STATUS</span>
+          </div>
+          <span class="active-badge waiting" id="activeStatusBadge">AWAITING VEHICLE</span>
+        </div>
+        <div class="active-process-desc" id="activeProcessDesc">
+          Forecourt sensor active at Bay 1 — awaiting vehicle arrival for optical plate verification...
+        </div>
+
+        <!-- Registration & Decision Tag -->
         <div class="hero-topline">
-          <span id="decisionTag" style="letter-spacing:1px;font-weight:900;">WAITING FOR VEHICLE INGRESS</span>
+          <span id="decisionTag">WAITING FOR VEHICLE INGRESS</span>
           <span id="lastTime">—</span>
         </div>
-        <div class="hero-label" style="letter-spacing:1.5px;">VEHICLE REGISTRATION / वाहन संख्या</div>
-        <div class="hero-plate" id="plate" style="letter-spacing:3px;font-family:monospace;">— — — —</div>
-        <div class="owner-meta" id="ownerName" style="font-weight:700;">Sample Owner: —</div>
-        <h2 id="headline" style="font-size:1.6rem;font-weight:900;">Waiting for a vehicle scan</h2>
-        <p id="instruction" style="font-size:1rem;max-width:600px;margin:0 auto;">Vehicle scan on the AI Inspection page will immediately transmit the safety decision here.</p>
+
+        <!-- Number Plate Box -->
+        <div class="plate-container">
+          <div class="hero-label">VEHICLE REGISTRATION / वाहन संख्या</div>
+          <div class="hero-plate" id="plate">— — — —</div>
+          <div class="owner-meta" id="ownerName">Sample Owner: —</div>
+        </div>
+
+        <!-- 7.3 Section: Photo of the current vehicle with number plate -->
+        <div class="vehicle-photo-card" id="vehiclePhotoCard">
+          <div class="photo-card-header">
+            <span>📷 CURRENT VEHICLE PHOTO WITH NUMBER PLATE</span>
+            <span class="photo-cam-tag" id="camTag">INGRESS CAMERA 01</span>
+          </div>
+          <div class="photo-card-body">
+            <img id="vehicleCaptureImg" class="vehicle-capture-img" src="" alt="Vehicle capture" style="display:none;">
+            <div id="photoPlaceholder" class="photo-placeholder">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              <span>Ingress photo with number plate will display here</span>
+            </div>
+            <!-- High-Contrast License Plate Overlay -->
+            <div class="plate-overlay-badge" id="plateOverlayBadge">
+              <div class="ind-stripe">
+                <span>IND</span>
+                <span class="ind-chakra">☸</span>
+              </div>
+              <span class="ind-plate-num" id="overlayPlateNum">— — — —</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Decision Banner & Operating Instructions -->
+        <div class="decision-outcome-banner">
+          <h2 id="headline">Waiting for a vehicle scan</h2>
+          <p id="instruction">Vehicle scan on the AI Inspection page will immediately transmit the safety decision here.</p>
+        </div>
       </section>
 
-      <section class="decision-detail">
-        <div class="decision-detail-head">
-          <h2 style="font-weight:900;color:var(--gov-navy-dark);">Statutory Verification Checks</h2>
-          <span class="pill muted" id="inspectionRef">READY</span>
+      <!-- RIGHT COLUMN: Statutory Verification Checks, Reason Box, Recent Queue -->
+      <section class="kiosk-panel-right">
+        <!-- Verification Checks Card -->
+        <div class="detail-card">
+          <div class="decision-detail-head">
+            <div>
+              <h2>Statutory Verification Checks</h2>
+              <small>Dual Database Cross-Check: VAHAN &amp; PESO</small>
+            </div>
+            <span class="pill muted" id="inspectionRef">READY</span>
+          </div>
+
+          <div class="checks" id="checks">
+            <div class="empty-state">No vehicle checked yet.</div>
+          </div>
+
+          <div class="reason-box" id="reasonBox" hidden>
+            <h3>Reason for Holding CNG Filling:</h3>
+            <ul id="reasons"></ul>
+          </div>
+
+          <div class="kiosk-meta">
+            <span id="source">—</span>
+            <a class="btn outline" target="_blank" rel="noopener" id="reportLink" hidden>📄 Open Sample Report</a>
+          </div>
         </div>
-        <div class="checks" id="checks">
-          <div class="empty-state">No vehicle checked yet.</div>
-        </div>
-        <div class="reason-box" id="reasonBox" hidden>
-          <h3 style="color:var(--gov-red-dark);font-weight:900;">Reason for Holding CNG Filling:</h3>
-          <ul id="reasons" style="padding-left:20px;font-weight:700;"></ul>
-        </div>
-        <div class="kiosk-meta">
-          <span id="source">—</span>
-          <a class="btn outline" target="_blank" rel="noopener" id="reportLink" hidden>📄 Open Sample Report</a>
+
+        <!-- Recent Forecourt Stream -->
+        <div class="recent-stream-card">
+          <div class="stream-head">
+            <h3>Recent Station Ingresses</h3>
+            <span>Live Queue</span>
+          </div>
+          <div id="recent" class="kiosk-recent-compact">
+            <div class="empty-state">No saved inspections for this station yet.</div>
+          </div>
         </div>
       </section>
-    </div>
 
-    <div class="recent-head" style="margin-top:24px;">
-      <h2 style="font-size:1.2rem;font-weight:800;color:var(--gov-navy-dark);">Recent Station Ingresses & Inspections</h2>
-      <span id="connection" style="font-weight:700;color:var(--gov-green);">● Active Stream</span>
-    </div>
-    <div id="recent" class="kiosk-recent">
-      <div class="empty-state">No saved inspections.</div>
-    </div>
-
-    <div class="kiosk-footnote" style="background:#f1f5f9;color:var(--gov-text-muted);border:1px solid var(--gov-border);padding:10px 16px;border-radius:4px;margin-top:20px;">
-      OFFICIAL STATUTORY DISCLOSURE • CNG DISPENSING DECISIONS ARE GOVERNED BY RULE 35 OF GAS CYLINDERS RULES, 2016 AND CMVR 1989 • COMPLIANCE WITH STATION OPERATING PROCEDURES IS MANDATORY
     </div>
   </main>
 
   <script src="/static/cng-display.js" defer></script>
 </body>
+
 </html>
