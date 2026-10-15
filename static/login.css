@@ -1,0 +1,736 @@
+/* ==========================================================================
+   CNG CONNECT — Enterprise ANPR & Inspection Platform Login Styles
+   Pixel-perfect replication of CNG Connect UI
+   ========================================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
+  color: #0f172a;
+  background-color: #071526;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Fullscreen Background */
+.cng-login-viewport {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  background-image: url('/static/assets/bg.jpeg');
+  background-size: cover;
+  background-position: center center;
+  background-repeat: no-repeat;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 34px;
+}
+
+/* Container */
+.cng-login-container {
+  width: 100%;
+  max-width: 1580px;
+  min-height: calc(100vh - 48px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ==========================================================================
+   LEFT HERO SECTION (Branding, Headlines, Features, Stats)
+   ========================================================================== */
+.cng-hero-section {
+  flex: 1;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+/* Brand Header */
+.cng-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.cng-flame-icon {
+  width: 38px;
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.cng-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cng-brand-title {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  display: flex;
+  gap: 6px;
+}
+
+.cng-brand-title .brand-dark {
+  color: #0f172a;
+}
+
+.cng-brand-title .brand-green {
+  color: #10b981;
+}
+
+.cng-brand-subtitle {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+/* Main Hero Typography */
+.cng-hero-headline {
+  margin-bottom: 18px;
+}
+
+.cng-headline-line {
+  display: block;
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+}
+
+.cng-headline-line.green-accent {
+  color: #10b981;
+}
+
+.cng-hero-desc {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #475569;
+  max-width: 480px;
+  margin-bottom: 28px;
+  font-weight: 500;
+}
+
+/* Key Features List */
+.cng-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 34px;
+}
+
+.cng-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cng-feature-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #ecfdf5;
+  border: 1.5px solid #a7f3d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #059669;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12);
+}
+
+.cng-feature-icon-wrap svg {
+  width: 20px;
+  height: 20px;
+}
+
+.cng-feature-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.cng-feature-title {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.25;
+}
+
+.cng-feature-sub {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+/* Floating Stats Capsule Bar */
+.cng-stats-bar {
+  background: rgba(11, 28, 48, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  padding: 16px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 560px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+}
+
+.cng-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cng-stat-icon {
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cng-stat-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.cng-stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.cng-stat-num {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.cng-stat-lbl {
+  color: #94a3b8;
+  font-size: 10.5px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.cng-stat-divider {
+  width: 1px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ==========================================================================
+   RIGHT LOGIN CARD SECTION
+   ========================================================================== */
+.cng-card-section {
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cng-auth-card {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.08);
+  padding: 32px 32px 24px 32px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Card Top Badge */
+.cng-card-badge {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 5px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #334155;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.cng-card-badge svg {
+  width: 13px;
+  height: 13px;
+  color: #1e293b;
+}
+
+/* Card Brand Header */
+.cng-card-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.cng-card-brand .cng-flame-icon {
+  width: 30px;
+  height: 36px;
+}
+
+.cng-card-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cng-card-brand-title {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  display: flex;
+  gap: 5px;
+}
+
+.cng-card-brand-title .brand-dark {
+  color: #0f172a;
+}
+
+.cng-card-brand-title .brand-green {
+  color: #10b981;
+}
+
+.cng-card-brand-sub {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Welcome Headings */
+.cng-card-welcome {
+  margin-bottom: 22px;
+}
+
+.cng-welcome-title {
+  font-size: 27px;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.cng-welcome-sub {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Form Styling */
+.cng-auth-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.cng-form-group {
+  margin-bottom: 15px;
+}
+
+.cng-form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.cng-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cng-input-icon {
+  position: absolute;
+  left: 13px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.cng-input-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.cng-input {
+  width: 100%;
+  padding: 11.5px 14px 11.5px 40px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #0f172a;
+  background-color: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.cng-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.cng-input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.cng-pw-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+
+.cng-pw-toggle:hover {
+  color: #475569;
+}
+
+.cng-pw-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Options Row (Remember me + Forgot Password) */
+.cng-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 2px 0 18px 0;
+  font-size: 13px;
+}
+
+.cng-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 600;
+  color: #334155;
+  font-size: 12.5px;
+}
+
+.cng-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 17px;
+  height: 17px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 4px;
+  background-color: #ffffff;
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  transition: all 0.15s ease;
+}
+
+.cng-checkbox:checked {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.cng-checkbox:checked::before {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border-left: 2px solid #ffffff;
+  border-bottom: 2px solid #ffffff;
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
+.cng-forgot-link {
+  color: #10b981;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 12.5px;
+  transition: color 0.15s;
+}
+
+.cng-forgot-link:hover {
+  color: #059669;
+  text-decoration: underline;
+}
+
+/* Submit Button */
+.cng-submit-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: #10b981;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.cng-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+  filter: brightness(1.03);
+}
+
+.cng-submit-btn:active {
+  transform: translateY(0);
+}
+
+.cng-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Error Notification */
+.cng-error-alert {
+  margin-top: 12px;
+  padding: 9px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 600;
+  display: none;
+  line-height: 1.4;
+}
+
+/* Divider OR */
+.cng-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 16px 0;
+  color: #94a3b8;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.cng-divider::before,
+.cng-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.cng-divider span {
+  padding: 0 10px;
+  text-transform: uppercase;
+}
+
+/* Security Notice Box */
+.cng-security-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 18px;
+}
+
+.cng-security-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ecfdf5;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #a7f3d0;
+}
+
+.cng-security-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.cng-security-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cng-security-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.cng-security-sub {
+  font-size: 10.5px;
+  color: #64748b;
+  line-height: 1.35;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+/* Card Footer */
+.cng-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10.5px;
+  color: #94a3b8;
+  font-weight: 500;
+  padding-top: 4px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cng-footer-copy {
+  color: #94a3b8;
+}
+
+.cng-footer-links {
+  display: flex;
+  gap: 8px;
+}
+
+.cng-footer-links a {
+  color: #64748b;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.cng-footer-links a:hover {
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   RESPONSIVENESS (TABLET & MOBILE)
+   ========================================================================== */
+@media (max-width: 1120px) {
+  .cng-login-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+    padding: 20px 0;
+  }
+
+  .cng-hero-section {
+    max-width: 100%;
+    align-items: center;
+    text-align: center;
+  }
+
+  .cng-brand-header {
+    justify-content: center;
+  }
+
+  .cng-hero-desc {
+    max-width: 100%;
+  }
+
+  .cng-features-list {
+    align-items: center;
+  }
+
+  .cng-stats-bar {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .cng-card-section {
+    justify-content: center;
+    max-width: 440px;
+  }
+}
+
+@media (max-width: 640px) {
+  .cng-login-viewport {
+    padding: 16px;
+  }
+
+  .cng-headline-line {
+    font-size: 32px;
+  }
+
+  .cng-stats-bar {
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-around;
+  }
+
+  .cng-stat-divider {
+    display: none;
+  }
+
+  .cng-auth-card {
+    padding: 24px 20px 20px 20px;
+  }
+
+  .cng-welcome-title {
+    font-size: 24px;
+  }
+
+  .cng-card-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+}

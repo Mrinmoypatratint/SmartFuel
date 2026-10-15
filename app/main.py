@@ -821,10 +821,14 @@ def cng_display_latest(station_id:Optional[int]=None,user:User=Depends(require_u
             'source':scan.method,'event_type':event.event_type if event else 'inspection',
             'station_id':scan.station_id,'plate':decision['plate'], 'owner_name':(saved.get('vehicle') or {}).get('owner_name',''),
             'decision':decision,'ocr_confidence':scan.confidence,
+            'image_url':f'/api/snapshots/{scan.image_file}' if scan.image_file else None,
             'report_url':f'/api/reports/{scan.id}'})
+    total_scanned = db.query(Inspection).filter(Inspection.station_id==station_id).count()
+    total_passed = db.query(Inspection).filter(Inspection.station_id==station_id, Inspection.status.in_(['valid','eligible','demo_pass'])).count()
     station=db.get(Station,station_id)
     return {'station_id':station_id,'station_name':station.name if station else '',
             'latest':summaries[0] if summaries else None,'recent':summaries,
+            'stats':{'total_scanned':total_scanned,'total_passed':total_passed},
             'disclaimer':'ALL RECORDS ARE DEMONSTRATION DATA. NOT GOVERNMENT VERIFIED.'}
 
 @app.get('/cng-display')
