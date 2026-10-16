@@ -16,6 +16,7 @@ from .database import Base, engine, SessionLocal, User, Vehicle, Cylinder, Inspe
 from .security import create_token, read_token, hash_password, check_password
 from .ocr_engine import ocr_plate, read_image, configure_tesseract
 from .vahan_gateway import resolve_and_cache_vehicle, VAHAN_ENABLED
+from .ai_verifier import verify_plate_with_ai
 
 ROOT=Path(__file__).resolve().parent.parent
 STORE=Path(os.getenv('DATA_DIR',str(ROOT/'storage')))
@@ -158,6 +159,14 @@ def cng_supply_guidance(result, needs_review=False):
             reasons.append(f'{label}: hydrotesting certificate information or expiry date is missing.')
         else:
             checks.append({'name':f'Cylinder {index} hydrotest','state':'pass','detail':f'{label}: in-date sample record'})
+    ai_ver = result.get('ai_verification') or {}
+    if ai_ver.get('status') == 'DUAL_CONFIRMED':
+        checks.insert(0, {'name': 'AI Double Verification', 'state': 'pass', 'detail': f'Dual-confirmed: Local OCR + GPT-4o Mini ({ai_ver.get("final_plate")})'})
+    elif ai_ver.get('status') == 'AI_OVERRIDE':
+        checks.insert(0, {'name': 'AI Double Verification', 'state': 'pass', 'detail': f'GPT-4o Mini contextual override ({ai_ver.get("final_plate")})'})
+    elif ai_ver.get('status') in ('TIMEOUT', 'AI_FALLBACK'):
+        checks.insert(0, {'name': 'AI Double Verification', 'state': 'review', 'detail': 'AI service timeout — verified via local OCR consensus'})
+
     if needs_review or not plate or result.get('status')=='unverified' and not reasons:
         reason_codes.insert(0,'OCR_OR_RECORD_REVIEW')
         reasons.insert(0,'Verify the recognised number plate and sample documents manually before proceeding.')
@@ -474,10 +483,25 @@ async def scan(request:Request,user:User=Depends(require_user),db:Session=Depend
             rec=await asyncio.to_thread(ocr_plate,raw)
             saved=await asyncio.to_thread(save_photo,raw)
     except (ValueError,RuntimeError) as exc:fail(400,str(exc))
-    p=rec['plate'];low_confidence=bool(p and float(rec.get('confidence') or 0)<35)
+    p=rec['plate']
+    # AI Double Verification via GPT-4o Mini Vision API
+    ai_result = await asyncio.to_thread(verify_plate_with_ai, raw, p, float(rec.get('confidence') or 0), rec.get('candidates'))
+    if ai_result.get('final_plate'):
+        p = ai_result['final_plate']
+        rec['plate'] = p
+    rec['ai_verification'] = ai_result
+    if ai_result.get('dual_confirmed'):
+        rec['method'] = 'Dual AI-OCR Verified'
+        rec['confidence'] = max(float(rec.get('confidence') or 0), float(ai_result.get('ai_confidence') or 98.0))
+    elif ai_result.get('ai_override'):
+        rec['method'] = 'GPT-4o Mini Context Override'
+        rec['confidence'] = float(ai_result.get('ai_confidence') or 95.0)
+
+    low_confidence=bool(p and float(rec.get('confidence') or 0)<35)
     r=({'plate':p,'vehicle':None,'status':'unverified','explanation':'Low OCR confidence: manually confirm the plate before checking a record','disclaimer':'DEMO DATA — NOT VERIFIED'} if low_confidence else result_for(db,user,p)) if p else {'plate':'','vehicle':None,'status':'unverified','explanation':'OCR failed to read the plate: verify it manually','disclaimer':'DEMO DATA — NOT VERIFIED'}
+    r['ai_verification']=ai_result
     rec['needs_review']=bool(low_confidence or not p)
-    ident=create_inspection(db,user,p,p,rec.get('confidence',0),str(body.get('method','Image upload'))[:50],r,saved,station_id=body.get('station_id'),needs_review=rec['needs_review'])
+    ident=create_inspection(db,user,p,p,rec.get('confidence',0),str(rec.get('method', body.get('method','Image upload')))[:50],r,saved,station_id=body.get('station_id'),needs_review=rec['needs_review'])
     return {'id':ident,'recognition':rec,'result':r,'image_url':'/api/snapshots/'+saved}
 
 # --- v6: live browser OCR monitoring and immutable entry event ledger ---
@@ -535,8 +559,24 @@ async def camera_entry(request:Request,user:User=Depends(require_user),db:Sessio
             {'plate':p,'vehicle':None,'status':'unverified',
              'explanation':'OCR confidence is low. Confirm the detected plate before relying on its demo database result.',
              'disclaimer':'DEMO DATA — MANUAL REVIEW REQUIRED'})
+    # AI Double Verification via GPT-4o Mini Vision API
+    ai_result = await asyncio.to_thread(verify_plate_with_ai, raw, p, confidence, rec.get('candidates'))
+    if ai_result.get('final_plate'):
+        p = ai_result['final_plate']
+        rec['plate'] = p
+    rec['ai_verification'] = ai_result
+    result['ai_verification'] = ai_result
+    if ai_result.get('dual_confirmed'):
+        rec['method'] = 'Dual AI-OCR Verified'
+        confidence = max(confidence, float(ai_result.get('ai_confidence') or 98.0))
+        rec['confidence'] = confidence
+    elif ai_result.get('ai_override'):
+        rec['method'] = 'GPT-4o Mini Context Override'
+        confidence = float(ai_result.get('ai_confidence') or 95.0)
+        rec['confidence'] = confidence
+
     photo=await asyncio.to_thread(save_photo,raw)
-    ident=create_inspection(db,user,p,p,confidence,'Automatic USB webcam',result,photo,
+    ident=create_inspection(db,user,p,p,confidence,str(rec.get('method', 'Automatic USB webcam'))[:50],result,photo,
                             station_id=sid,event_type='entry',needs_review=needs_review,camera_session=session)
     ev=db.query(VehicleEvent).filter_by(inspection_id=ident).first()
     return {'accepted':True,'entry_id':ev.id,'entry_at':utc_timestamp(ev.observed_at),
@@ -821,6 +861,7 @@ def cng_display_latest(station_id:Optional[int]=None,user:User=Depends(require_u
             'source':scan.method,'event_type':event.event_type if event else 'inspection',
             'station_id':scan.station_id,'plate':decision['plate'], 'owner_name':(saved.get('vehicle') or {}).get('owner_name',''),
             'decision':decision,'ocr_confidence':scan.confidence,
+            'ai_verification':saved.get('ai_verification'),
             'image_url':f'/api/snapshots/{scan.image_file}' if scan.image_file else None,
             'report_url':f'/api/reports/{scan.id}'})
     total_scanned = db.query(Inspection).filter(Inspection.station_id==station_id).count()
@@ -903,7 +944,12 @@ async def edge_scan(request:Request,db:Session=Depends(db_session)):
     if recent:
         device.last_seen=now;db.commit()
         return {'accepted':False,'duplicate':True,'plate':p,'inspection_id':recent.id}
+    # AI Double Verification via GPT-4o Mini Vision API
+    ai_result = await asyncio.to_thread(verify_plate_with_ai, raw, p, float(rec.get('confidence', 0)), rec.get('candidates'))
+    if ai_result.get('final_plate'):
+        p = ai_result['final_plate']
     r=result_for(db,User(role='admin',id=None),p)
+    r['ai_verification']=ai_result
     saved=await asyncio.to_thread(save_photo,raw)
     obj=Inspection(recognized_plate=p,checked_plate=p,confidence=round(float(rec.get('confidence',0)),2),
                    method='Station edge camera',status=r['status'],details_json=json.dumps(r),
@@ -911,3 +957,16 @@ async def edge_scan(request:Request,db:Session=Depends(db_session)):
     db.add(obj);db.flush();record_vehicle_event(db,obj,'entry',camera_session=f'edge:{device.id}');audit(db,None,'camera.inspection',str(obj.id),f'device={device.id}')
     device.last_seen=now;db.commit()
     return {'accepted':True,'plate':p,'inspection_id':obj.id,'status':r['status'],'demo':True}
+
+
+@app.get('/api/ai/status')
+def ai_system_status(user:User=Depends(require_user)):
+    """Returns status of OpenAI GPT-4o Mini Vision API integration."""
+    api_key = os.getenv('OPENAI_API_KEY', '').strip()
+    return {
+        'enabled': bool(api_key and os.getenv('OPENAI_VISION_ENABLED', '1') == '1'),
+        'has_api_key': bool(api_key),
+        'api_key_masked': f"{api_key[:7]}...{api_key[-4:]}" if len(api_key) > 12 else ('Configured' if api_key else 'Not set in .env'),
+        'model': os.getenv('OPENAI_MODEL', 'gpt-4o-mini'),
+        'timeout_seconds': float(os.getenv('OPENAI_TIMEOUT_SECONDS', '4.0'))
+    }

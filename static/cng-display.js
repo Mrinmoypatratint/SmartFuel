@@ -160,6 +160,23 @@ function decisionView(row) {
     }[state] || 'WAITING FOR VEHICLE';
   }
 
+  // AI Double Verification Pill (GPT-4o Mini)
+  const aiPill = $('aiVerifiedPill');
+  if (aiPill) {
+    const ai = row.ai_verification || d.ai_verification;
+    if (ai?.dual_confirmed) {
+      aiPill.textContent = '🤖 GPT-4o Mini Dual Confirmed';
+      aiPill.className = 'ai-verified-pill dual-pass';
+      aiPill.style.display = 'inline-flex';
+    } else if (ai?.ai_override) {
+      aiPill.textContent = '🤖 GPT-4o Mini Verified';
+      aiPill.className = 'ai-verified-pill ai-override';
+      aiPill.style.display = 'inline-flex';
+    } else {
+      aiPill.style.display = 'none';
+    }
+  }
+
   // Time & Plate
   if ($('lastTime')) {
     $('lastTime').textContent = row.observed_at ? new Date(row.observed_at).toLocaleTimeString() : '—';

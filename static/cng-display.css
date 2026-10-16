@@ -1160,3 +1160,36 @@ html, body {
   background: #fef3c7;
   color: #b45309;
 }
+
+/* AI Double Verification Badge */
+.ai-verified-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: #04127b;
+  color: #ffffff;
+  border: 1px solid #ffaf00;
+  box-shadow: 0 0 8px rgba(255, 175, 0, 0.35);
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.ai-verified-pill.dual-pass {
+  background: #064e3b;
+  border-color: #10b981;
+  color: #6ee7b7;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+}
+
+.ai-verified-pill.ai-override {
+  background: #78350f;
+  border-color: #f59e0b;
+  color: #fef3c7;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.35);
+}
+
