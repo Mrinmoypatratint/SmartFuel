@@ -6,4 +6,6 @@ storage/
 .venv/
 CNG-Connect-Complete-Vehicle-Recognition-Queue-Logic.pdf
 SMARTFUEL_ITERATION_LOG.md
+*.zip
+Source/pdf_extracted.txt
 
