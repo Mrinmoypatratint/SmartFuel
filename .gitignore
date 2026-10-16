@@ -3,3 +3,7 @@ __pycache__/
 .pytest_cache/
 storage/
 *.pyc
+.venv/
+CNG-Connect-Complete-Vehicle-Recognition-Queue-Logic.pdf
+SMARTFUEL_ITERATION_LOG.md
+

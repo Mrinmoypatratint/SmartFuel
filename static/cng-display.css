@@ -1,11 +1,10 @@
 /* ==========================================================================
-   SMARTFUEL — 42-INCH COMMERCIAL ISLAND ATTENDANT DECISION DISPLAY
-   Specs:
-   - Zero scrolling, 100% viewport fit (height: 100vh; overflow: hidden)
-   - Large daylight-visible typography and high-contrast color codes
-   - Real-time vehicle statistics: Total Scanned & Passed All Criteria
-   - Section 7.2: Active process status indicator
-   - Section 7.3: Photo of current vehicle with number plate overlay
+   SMARTFUEL — High-Visibility Commercial Island Attendant Display
+   Replication of exact UI mockup:
+   - 100vh Zero-Scroll Kiosk layout for 42" & 1080p commercial displays
+   - Modern clean cards, harmonious color palette, crisp typography
+   - Active status bar (7.2), Vehicle photo with HSRP plate overlay (7.3)
+   - Forecourt scan/pass statistics, statutory checks & 2x3 recent ingress grid
    ========================================================================== */
 
 *, *::before, *::after {
@@ -19,14 +18,14 @@ html, body {
   height: 100vh;
   max-height: 100vh;
   overflow: hidden;
-  background-color: #f1f5f9;
+  background-color: #f0f6fc;
   color: #0f172a;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-.cng-kiosk-42 {
+.cng-kiosk-page {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -38,16 +37,15 @@ html, body {
    1. TOP COMPACT STATUTORY STRIP
    ========================================================================== */
 .kiosk-gov-strip {
-  height: 28px;
-  background: #0c2340;
+  height: 30px;
+  background: #061a33;
   color: #f8fafc;
-  padding: 0 24px;
+  padding: 0 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  border-bottom: 2.5px solid #d97706;
   flex-shrink: 0;
 }
 
@@ -57,16 +55,18 @@ html, body {
   gap: 8px;
 }
 
-.flag-icon {
-  font-size: 0.95rem;
+.gov-emblem {
+  font-size: 0.85rem;
 }
 
 .gov-sep {
-  color: #64748b;
+  color: #475569;
+  margin: 0 4px;
 }
 
 .gov-mandate {
-  color: #fef3c7;
+  color: #f1f5f9;
+  font-weight: 600;
 }
 
 .gov-right {
@@ -75,390 +75,582 @@ html, body {
   gap: 12px;
 }
 
-.live-beacon {
+.live-beacon-pill {
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(16, 185, 129, 0.5);
   color: #34d399;
-  font-weight: 900;
-  font-size: 0.72rem;
-  letter-spacing: 0.05em;
-}
-
-.conn-status {
-  color: #cbd5e1;
-  font-size: 0.72rem;
-}
-
-/* ==========================================================================
-   2. KIOSK HEADER: BRANDING, METRICS PILLS, CLOCK, TOOLS
-   ========================================================================== */
-.kiosk-top {
-  height: 64px;
-  background: #ffffff;
-  border-bottom: 1.5px solid #cbd5e1;
-  padding: 0 24px;
-  display: flex;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  flex-shrink: 0;
+  gap: 4px;
 }
 
-.identity {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.kiosk-brand-logo {
-  width: 40px;
-  height: 40px;
+.beacon-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  border: 2px solid #d97706;
-  object-fit: contain;
-  background: #ffffff;
-}
-
-.brand-text strong {
-  display: block;
-  font-size: 1.05rem;
-  font-weight: 900;
-  color: #0f172a;
-  line-height: 1.15;
-}
-
-.brand-text span {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: #64748b;
-}
-
-/* Live Forecourt Metrics (Total Scanned & Total Passed) */
-.kiosk-stats-cluster {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.stat-pill {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 14px;
-  border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-.total-scanned-pill {
-  background: #f8fafc;
-  border: 1.5px solid #cbd5e1;
-}
-
-.total-passed-pill {
-  background: #ecfdf5;
-  border: 1.5px solid #a7f3d0;
-}
-
-.stat-pill-icon {
-  font-size: 1.3rem;
-  line-height: 1;
-}
-
-.stat-pill-data {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-pill-num {
-  font-size: 1.35rem;
-  font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-.total-scanned-pill .stat-pill-num {
-  color: #0f172a;
-}
-
-.total-passed-pill .stat-pill-num {
-  color: #059669;
-}
-
-.stat-pill-label {
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  color: #64748b;
-  text-transform: uppercase;
-}
-
-/* Tools & Station Select */
-.kiosk-tools {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.station-select-box {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.station-select-box label {
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: #475569;
-  letter-spacing: 0.05em;
-}
-
-.station-select-box select {
-  padding: 6px 10px;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #0f172a;
-  background: #ffffff;
-  outline: none;
-}
-
-.kiosk-clock {
-  font-size: 1.15rem;
-  font-weight: 900;
-  color: #1e3a8a;
-  font-family: monospace;
-  background: #e0f2fe;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid #bae6fd;
-}
-
-.kiosk-btn {
-  padding: 6px 12px;
-  font-size: 0.78rem;
-  font-weight: 800;
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-/* ==========================================================================
-   3. MAIN 42-INCH DASHBOARD GRID (ZERO SCROLLING)
-   ========================================================================== */
-.kiosk-main-42 {
-  flex: 1;
-  height: calc(100vh - 92px);
-  padding: 12px 20px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.display-grid-42 {
-  display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  gap: 14px;
-  height: 100%;
-  max-height: 100%;
-  overflow: hidden;
-}
-
-/* ==========================================================================
-   LEFT COLUMN: Active Status (7.2), Vehicle Plate, Captured Photo (7.3)
-   ========================================================================== */
-.kiosk-panel-left {
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1.5px solid #cbd5e1;
-  box-shadow: 0 4px 16px rgba(14, 49, 82, 0.06);
-  padding: 14px 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  position: relative;
-  transition: all 0.25s ease;
-}
-
-/* State Background Themes */
-.decision-hero.waiting {
-  background: #f0f7ff;
-  border-top: 6px solid #0284c7;
-}
-
-.decision-hero.demo_pass {
-  background: #ecfdf5;
-  border-top: 6px solid #10b981;
-}
-
-.decision-hero.hold {
-  background: #fef2f2;
-  border-top: 6px solid #ef4444;
-}
-
-.decision-hero.review {
-  background: #fffbeb;
-  border-top: 6px solid #f59e0b;
-}
-
-/* 7.2 Active Process Status Bar */
-.active-status-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1.5px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  padding: 6px 12px;
-  margin-bottom: 6px;
-}
-
-.active-status-pulse {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.active-dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: #0284c7;
+  background: #34d399;
   display: inline-block;
-  animation: pulseBeacon 1.6s infinite;
+  animation: beaconPulse 1.6s infinite;
 }
 
-@keyframes pulseBeacon {
+@keyframes beaconPulse {
   0% { transform: scale(0.9); opacity: 0.8; }
   50% { transform: scale(1.3); opacity: 1; }
   100% { transform: scale(0.9); opacity: 0.8; }
 }
 
-.active-label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: #334155;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.active-badge {
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-  padding: 3px 10px;
-  border-radius: 20px;
-  text-transform: uppercase;
-}
-
-.active-badge.waiting { background: #e0f2fe; color: #0369a1; }
-.active-badge.pass { background: #d1fae5; color: #047857; }
-.active-badge.hold { background: #fee2e2; color: #b91c1c; }
-.active-badge.review { background: #fef3c7; color: #b45309; }
-
-.active-process-desc {
-  font-size: 0.76rem;
-  font-weight: 600;
-  color: #475569;
-  line-height: 1.3;
-  margin-bottom: 8px;
-}
-
-.hero-topline {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.72rem;
-  font-weight: 900;
-  color: #475569;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-/* Number Plate Container */
-.plate-container {
-  margin: 4px 0 8px 0;
-}
-
-.hero-label {
+.stream-meta {
+  color: #94a3b8;
   font-size: 0.68rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   2. HEADER NAV & METRICS STRIP (WHITE CARD)
+   ========================================================================== */
+.kiosk-header-bar {
+  height: 72px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  margin: 8px 16px 8px 16px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  flex-shrink: 0;
+}
+
+/* Brand */
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-crest {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #f59e0b;
+  object-fit: contain;
+  background: #ffffff;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.brand-subtitle {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #0284c7;
+  line-height: 1.25;
+}
+
+/* Stat Cards (Total Scanned & Passed All Criteria) */
+.header-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  min-width: 170px;
+}
+
+.stat-icon-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.blue-circle {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.green-circle {
+  background: #dcfce7;
+  color: #10b981;
+}
+
+.stat-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-num {
+  font-size: 1.55rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.stat-num.green-num {
+  color: #059669;
+}
+
+.stat-label {
+  font-size: 0.62rem;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.05em;
   color: #64748b;
   text-transform: uppercase;
+  margin-top: 2px;
 }
 
-.hero-plate {
-  font-size: clamp(34px, 4vw, 54px);
-  font-weight: 950;
-  font-family: "Consolas", "Courier New", monospace;
+/* Controls: Station, Clock, Buttons */
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.station-pill-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.station-pin {
+  color: #0284c7;
+  font-size: 0.9rem;
+}
+
+.station-pill-box label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #475569;
+  letter-spacing: 0.04em;
+}
+
+.station-pill-box select {
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: #0f172a;
-  letter-spacing: 3px;
-  line-height: 1.1;
-  margin: 2px 0 4px 0;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
 }
 
-.owner-meta {
-  display: inline-block;
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.08);
+.clock-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  background: #ffffff;
+}
+
+.clock-icon-svg {
+  color: #0284c7;
+}
+
+.clock-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.clock-time {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  font-family: monospace;
+}
+
+.clock-date {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.btn-fullscreen {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-fullscreen:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.btn-dashboard {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #0f172a;
+  border: 1.5px solid #0f172a;
+  border-radius: 9px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-dashboard:hover {
+  background: #1e293b;
+}
+
+/* ==========================================================================
+   3. MAIN DASHBOARD GRID (ZERO SCROLLING)
+   ========================================================================== */
+.kiosk-main-grid {
+  flex: 1;
+  height: calc(100vh - 120px);
+  padding: 0 16px 12px 16px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.06fr 1fr;
+  gap: 14px;
+}
+
+/* ==========================================================================
+   LEFT COLUMN (Active Process, Hero Registration, Captured Vehicle Photo)
+   ========================================================================== */
+.kiosk-left-panel {
+  background: #f0fdf9;
+  border: 1.5px solid #a7f3d0;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.05);
+  transition: all 0.25s ease;
+}
+
+/* Dynamic State Themes */
+.kiosk-left-panel.waiting {
+  background: #f0f7ff;
+  border-color: #bae6fd;
+}
+
+.kiosk-left-panel.demo_pass {
+  background: #f0fdf9;
+  border-color: #a7f3d0;
+}
+
+.kiosk-left-panel.hold {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.kiosk-left-panel.review {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+/* Top Process Status Row */
+.process-status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.status-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-check-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.status-check-circle.hold { background: #ef4444; }
+.status-check-circle.review { background: #f59e0b; }
+.status-check-circle.waiting { background: #0284c7; }
+
+.status-title-text {
+  font-size: 0.84rem;
+  font-weight: 900;
+  color: #0f172a;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status-badge-pill {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-badge-pill.pass {
+  background: #dcfce7;
+  color: #047857;
+  border: 1px solid #86efac;
+}
+
+.status-badge-pill.hold {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+}
+
+.status-badge-pill.review {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.status-badge-pill.waiting {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+/* Sub-banner notification line */
+.process-sub-banner {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #065f46;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.process-sub-banner.hold {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.process-sub-banner.review {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.process-sub-banner.waiting {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+
+/* Vehicle Registration Hero Sub-Card */
+.vehicle-reg-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.reg-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.reg-left-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.car-circle-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+
+.decision-tag-pill {
+  padding: 3px 10px;
   border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: #dcfce7;
+  color: #047857;
+}
+
+.decision-tag-pill.hold { background: #fee2e2; color: #b91c1c; }
+.decision-tag-pill.review { background: #fef3c7; color: #b45309; }
+.decision-tag-pill.waiting { background: #e0f2fe; color: #0369a1; }
+
+.time-tag-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   padding: 3px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+.reg-label {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.reg-plate-hero {
+  font-size: clamp(34px, 3.8vw, 48px);
+  font-weight: 950;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Consolas", monospace;
+  letter-spacing: 2.5px;
+  color: #0f172a;
+  line-height: 1.05;
+  margin: 2px 0 6px 0;
+}
+
+.reg-owner-pill {
+  display: inline-block;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 3px 10px;
   font-size: 0.74rem;
   font-weight: 700;
   color: #334155;
 }
 
-/* ==========================================================================
-   7.3 SECTION: PHOTO OF CURRENT VEHICLE WITH NUMBER PLATE OVERLAY
-   ========================================================================== */
-.vehicle-photo-card {
-  border: 1.5px solid #cbd5e1;
-  border-radius: 10px;
-  background: #020617;
-  overflow: hidden;
-  position: relative;
-  height: clamp(140px, 18vh, 190px);
-  display: flex;
-  flex-direction: column;
-  margin: 6px 0;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+/* Faint car watermark illustration in background of card */
+.card-car-watermark {
+  position: absolute;
+  right: -10px;
+  bottom: -5px;
+  width: 170px;
+  height: 95px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%230284c7' opacity='0.09'%3E%3Cpath d='M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
 }
 
-.photo-card-header {
-  height: 22px;
-  background: rgba(15, 23, 42, 0.85);
-  color: #94a3b8;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  padding: 0 10px;
+/* Current Vehicle Photo with Number Plate */
+.vehicle-photo-container {
+  border: 1.5px solid #cbd5e1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #000000;
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.photo-header-strip {
+  height: 24px;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   z-index: 2;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.photo-cam-tag {
+.photo-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.photo-cam-id {
   color: #38bdf8;
+  font-weight: 800;
 }
 
-.photo-card-body {
-  flex: 1;
+.photo-viewport {
+  height: clamp(120px, 16vh, 155px);
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: #020617;
 }
 
-.vehicle-capture-img {
+.car-photo-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center 45%;
 }
 
 .photo-placeholder {
@@ -472,12 +664,8 @@ html, body {
   font-weight: 600;
 }
 
-.photo-placeholder svg {
-  stroke: #64748b;
-}
-
-/* High-Contrast License Plate Overlay */
-.plate-overlay-badge {
+/* High-Contrast Indian HSRP License Plate Overlay */
+.hsrp-plate-overlay {
   position: absolute;
   bottom: 8px;
   left: 10px;
@@ -488,16 +676,16 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
   z-index: 3;
 }
 
-.ind-stripe {
+.hsrp-ind-col {
   background: #002244;
   color: #ffffff;
   padding: 2px 4px;
   border-radius: 2px;
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   font-weight: 900;
   display: flex;
   flex-direction: column;
@@ -505,50 +693,72 @@ html, body {
   line-height: 1;
 }
 
-.ind-chakra {
+.ind-dot {
   color: #ff9933;
-  font-size: 0.5rem;
+  font-size: 0.45rem;
 }
 
-.ind-plate-num {
-  font-size: 1.15rem;
+.hsrp-num-text {
+  font-size: 1.1rem;
   font-weight: 900;
   color: #000000;
-  font-family: "Consolas", "Courier New", monospace;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Consolas", monospace;
   letter-spacing: 1.5px;
 }
 
-/* Decision Outcome Banner */
-.decision-outcome-banner {
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+/* Bottom Notice Banner */
+.bottom-notice-banner {
+  background: #fffbeb;
+  border: 1px solid #fef08a;
+  border-radius: 10px;
   padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.decision-outcome-banner h2 {
-  font-size: 1.1rem;
+.notice-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notice-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notice-info-icon {
+  color: #d97706;
+  font-size: 0.85rem;
   font-weight: 900;
-  margin-bottom: 2px;
-  line-height: 1.2;
 }
 
-.decision-hero.demo_pass h2 { color: #047857; }
-.decision-hero.hold h2 { color: #b91c1c; }
-.decision-hero.review h2 { color: #b45309; }
-.decision-hero.waiting h2 { color: #0369a1; }
+.notice-title-row strong {
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: #78350f;
+}
 
-.decision-outcome-banner p {
-  font-size: 0.74rem;
+.bottom-notice-banner p {
+  font-size: 0.7rem;
   font-weight: 600;
-  color: #334155;
-  line-height: 1.35;
+  color: #92400e;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.notice-shield-watermark {
+  color: #fde047;
+  font-size: 1.4rem;
+  opacity: 0.7;
 }
 
 /* ==========================================================================
-   RIGHT COLUMN: Verification Checks & Live Recent Stream
+   RIGHT COLUMN (Statutory Checks & Recent Ingresses)
    ========================================================================== */
-.kiosk-panel-right {
+.kiosk-right-panel {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -557,214 +767,396 @@ html, body {
   overflow: hidden;
 }
 
-/* Detail Verification Checks Card */
-.detail-card {
+/* Top Right Card: Statutory Verification Checks */
+.statutory-card {
   background: #ffffff;
+  border: 1.5px solid #e2e8f0;
   border-radius: 16px;
-  border: 1.5px solid #cbd5e1;
   padding: 14px 18px;
-  flex: 1.3;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 16px rgba(14, 49, 82, 0.04);
-  overflow: hidden;
-}
-
-.decision-detail-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.decision-detail-head h2 {
-  font-size: 1.05rem;
-  font-weight: 900;
-  color: #0f172a;
-}
-
-.decision-detail-head small {
-  font-size: 0.68rem;
-  color: #64748b;
-  font-weight: 600;
-  display: block;
-}
-
-.pill {
-  font-size: 0.7rem;
-  font-weight: 800;
-  padding: 3px 8px;
-  border-radius: 20px;
-}
-
-.pill.muted {
-  background: #f1f5f9;
-  color: #475569;
-}
-
-/* Checks Rows */
-.checks {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-top: 10px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   overflow: hidden;
 }
 
-.check-row {
+.statutory-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.statutory-title-wrap {
+  display: flex;
   align-items: center;
   gap: 10px;
-  background: #f8fafc;
-  padding: 8px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
 }
 
-.check-row strong {
-  font-size: 0.82rem;
+.statutory-shield-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.statutory-title {
+  font-size: 1rem;
+  font-weight: 900;
   color: #0f172a;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.statutory-subtitle {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
   display: block;
 }
 
-.check-row p {
+.inspection-id-badge {
+  background: #e0f2fe;
+  color: #0284c7;
   font-size: 0.72rem;
-  color: #64748b;
-  margin: 1px 0 0 0;
-}
-
-.check-state {
-  font-size: 0.7rem;
-  font-weight: 900;
+  font-weight: 800;
+  padding: 3px 10px;
   border-radius: 20px;
-  padding: 4px 10px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
 }
 
-.check-state.pass { background: #d1fae5; color: #047857; }
-.check-state.fail { background: #fee2e2; color: #b91c1c; }
-.check-state.review { background: #fef3c7; color: #b45309; }
+/* Checks List */
+.checks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+  overflow: hidden;
+}
+
+.check-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.check-item-row.blue-tint {
+  background: #f0f7ff;
+  border-color: #e0f2fe;
+}
+
+.check-item-row.green-tint {
+  background: #f0fdf4;
+  border-color: #dcfce7;
+}
+
+.check-item-row.red-tint {
+  background: #fef2f2;
+  border-color: #fee2e2;
+}
+
+.check-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.check-badge-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.check-badge-icon.blue-bg {
+  background: #e0f2fe;
+  color: #0284c7;
+}
+
+.check-badge-icon.green-bg {
+  background: #dcfce7;
+  color: #10b981;
+}
+
+.check-badge-icon.red-bg {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.check-item-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.check-item-name {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.15;
+}
+
+.check-item-desc {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.check-status-pill {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.check-status-pill.pass {
+  background: #dcfce7;
+  color: #047857;
+}
+
+.check-status-pill.fail {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.check-status-pill.review {
+  background: #fef3c7;
+  color: #b45309;
+}
 
 .reason-box {
   background: #fff5f6;
   border: 1px solid #fecaca;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 8px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 .reason-box h3 {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: #991b1b;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .reason-box ul {
   padding-left: 16px;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: #7f1d1d;
-  line-height: 1.35;
+  line-height: 1.3;
 }
 
-.kiosk-meta {
+/* Statutory Footer Line */
+.statutory-footer {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 8px;
+  justify-content: space-between;
   padding-top: 8px;
   border-top: 1px solid #f1f5f9;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
+}
+
+.statutory-source {
   color: #64748b;
-}
-
-/* Recent Queue Stream Card */
-.recent-stream-card {
-  background: #ffffff;
-  border-radius: 16px;
-  border: 1.5px solid #cbd5e1;
-  padding: 10px 18px;
-  flex: 0.85;
+  font-weight: 600;
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 4px 16px rgba(14, 49, 82, 0.04);
-}
-
-.stream-head {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #e2e8f0;
+  gap: 6px;
 }
 
-.stream-head h3 {
-  font-size: 0.88rem;
-  font-weight: 900;
-  color: #0f172a;
-}
-
-.stream-head span {
-  font-size: 0.68rem;
-  font-weight: 800;
-  color: #0284c7;
-  text-transform: uppercase;
-}
-
-.kiosk-recent-compact {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 8px;
-  overflow: hidden;
-}
-
-.recent-item {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px 8px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+.btn-sample-report {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
   border-radius: 8px;
-  cursor: pointer;
-  text-align: left;
+  padding: 5px 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #0f172a;
+  text-decoration: none;
   transition: all 0.15s ease;
 }
 
-.recent-item:hover, .recent-item.active {
+.btn-sample-report:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+/* Bottom Right Card: Recent Station Ingresses */
+.recent-ingress-card {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 12px 18px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  flex: 1.1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.recent-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.recent-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recent-icon-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f3e8ff;
+  color: #9333ea;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.recent-title {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+}
+
+.live-queue-pill {
+  background: #dcfce7;
+  color: #047857;
+  font-size: 0.66rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+/* 2x3 Grid of Recent Ingress Cards */
+.recent-grid-2x3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.recent-ingress-box {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 7px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.recent-ingress-box:hover {
+  border-color: #0284c7;
+  background: #f8fafc;
+}
+
+.recent-ingress-box.active {
   border-color: #0284c7;
   background: #f0f7ff;
 }
 
-.recent-item .recent-plate {
+.recent-ingress-box.pass-item {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.recent-box-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.recent-time-source {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 85%;
+}
+
+.recent-car-mini {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #e0f2fe;
+  color: #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.55rem;
+  flex-shrink: 0;
+}
+
+.recent-plate-bold {
   font-size: 0.95rem;
   font-weight: 900;
   color: #0f172a;
-  font-family: monospace;
+  letter-spacing: 0.05em;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Consolas", monospace;
+  margin: 1px 0;
 }
 
-.recent-item span {
-  font-size: 0.62rem;
-  color: #64748b;
-}
-
-.recent-item small {
-  font-size: 0.65rem;
+.recent-status-tag {
+  font-size: 0.6rem;
   font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-.recent-item.demo_pass small { color: #047857; }
-.recent-item.hold small { color: #b91c1c; }
-.recent-item.review small { color: #b45309; }
+.recent-status-tag.pass {
+  background: #dcfce7;
+  color: #047857;
+}
 
-.empty-state {
-  text-align: center;
-  color: #94a3b8;
-  font-size: 0.75rem;
-  padding: 10px;
+.recent-status-tag.hold {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.recent-status-tag.review {
+  background: #fef3c7;
+  color: #b45309;
 }
