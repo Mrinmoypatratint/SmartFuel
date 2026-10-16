@@ -3,10 +3,11 @@
 **Project Name:** SmartFuel — Commercial Enterprise CNG Dispensing & Safety Management Automation Platform  
 **Developer & Provider:** SmartFuel Technologies Pvt. Ltd.  
 **Target Market:** City Gas Distribution (CGD) Companies, Retail Fueling Stations, Commercial Fleet Hubs  
-**Design Reference:** SF-ENT-UIUX-2026-V2.0  
+**Design Reference:** SF-ENT-UIUX-2026-V4.0  
 **Status:** Production Deployed (`https://fuel.cscsetu.com`)  
 **Aesthetic Style:** Modern Enterprise Energy B2B — Clean, Authoritative, Professional Station Automation  
 **Classification:** Proprietary / Commercial B2B  
+**Changelog:** V4.0 incorporates CNG Connect Complete Vehicle Recognition & Queue Management UI layout (ACTIVE vehicle card, UPCOMING/QUEUE list, atomic Done button transaction UX, Camera health status) and GPT-4o Mini Vision API double verification indicators (dual-confirmed badges, AI confidence meter, multi-image evidence strip).  
 
 ---
 
@@ -111,6 +112,7 @@ The island monitor operates in full-screen mode on outdoor dispenser monitors mo
 |                                                                                    |
 +------------------------------------------------------------------------------------+
 | Cylinders: 1/1 Valid  |  Next Test Due: 08-Apr-2027  |  Dispenser Solenoid: ACTIVE |
+| 🤖 AI Double Verified: DL01AB1234 (Local OCR + GPT-4o Mini Dual Confirmed)         |
 +------------------------------------------------------------------------------------+
 ```
 
@@ -130,9 +132,84 @@ The island monitor operates in full-screen mode on outdoor dispenser monitors mo
 
 ---
 
-## 5. Typography Hierarchy & Form Design
+## 5. Operator Station Dashboard & Queue UI Layout (CNG Connect Spec)
 
-### 5.1 Typography Hierarchy
+The Operator Dashboard is the primary touchpoint for the forecourt attendant. Per the CNG Connect specification (Section 18), the dashboard is strictly partitioned to operate **one vehicle at a time** while continuously visualizing upcoming queue readiness and recognition health.
+
+```
++----------------------------------------------------------------------------------------------------+
+| SMARTFUEL FORECOURT CONSOLE — STATION DL-104 (BAY 02)          CAMERA: ONLINE [25 FPS] [● LIVE]    |
++----------------------------------------------------------------------------------------------------+
+|                                                                                                    |
+|  +----------------------------------------------------------------------------------------------+  |
+|  | [ACTIVE VEHICLE] — IN BAY NOW (ONE AT A TIME)                                                |  |
+|  |                                                                                              |  |
+|  |  REGISTRATION:  DL 01 AB 1234                                                                |  |
+|  |  DECISION:      APPROVED (GREEN) — SAFE TO FUEL                                              |  |
+|  |  STATUS:        [RC: CNG ENDORSED ✓]  [CYLINDER: VALID TILL 08-APR-2027 ✓]                   |  |
+|  |  VERIFICATION:  🤖 DUAL CONFIRMED (Local OCR: DL01AB1234 | GPT-4o Mini: DL01AB1234)          |  |
+|  |  ARRIVED AT:    14:30:15 IST (Elapsed: 02m 45s)                                              |  |
+|  |  INTERLOCK:     DISPENSER UNLOCKED (24V ACTIVE)                                              |  |
+|  |                                                                                              |  |
+|  |  [ ✓ DONE — COMPLETE TRANSACTION & PROMOTE NEXT VEHICLE ]  [ ⚠ REPORT EXCEPTION ]           |  |
+|  +----------------------------------------------------------------------------------------------+  |
+|                                                                                                    |
+|  +----------------------------------------------------------------------------------------------+  |
+|  | [UPCOMING / QUEUE LIST] — PREPARED IN BACKGROUND (NEVER MIXED WITH ACTIVE)                  |  |
+|  +----+------------------+------------------+----------------------------+---------------------+  |
+|  | POS| EVENT ID         | PLATE CANDIDATE  | VERIFICATION STATUS        | READINESS / ACTION  |  |
+|  +----+------------------+------------------+----------------------------+---------------------+  |
+|  | #1 | EVT-DL104-0043   | WB 26 AC 5678    | HOLD (CYLINDER EXPIRED)    | READY (PRE-SCANNED) |  |
+|  |    |                  |                  | 🤖 GPT-4o Mini Confirmed   | Solenoid will Lock  |  |
+|  +----+------------------+------------------+----------------------------+---------------------+  |
+|  | #2 | EVT-DL104-0044   | MH 12 DE 3456    | APPROVED (COMPLIANT)       | READY (PRE-SCANNED) |  |
+|  |    |                  |                  | 🤖 GPT-4o Mini Confirmed   | Instant Promotion   |  |
+|  +----+------------------+------------------+----------------------------+---------------------+  |
+|  | #3 | EVT-DL104-0045   | UP 16 BT 9988    | CAPTURING (Frame 2 of 4)   | OCR / AI ANALYZING  |  |
+|  +----+------------------+------------------+----------------------------+---------------------+  |
+|                                                                                                    |
+|  CAMERA & SYSTEM HEALTH:                                                                           |
+|  • RTSP Stream: 1920x1080 @ 25 FPS (Latency: 42ms) | Local OCR: Tesseract 5.4 Active                |
+|  • GPT-4o Mini Vision API: Connected (p95: 780ms)  | Hardware Relay: MODBUS Channel 2 [HEALTHY]    |
++----------------------------------------------------------------------------------------------------+
+```
+
+### 5.1 Operator Dashboard Components
+
+| Area | UI Component | Real-Time Dynamic Behavior |
+| :--- | :--- | :--- |
+| **ACTIVE VEHICLE Card** | High-contrast prominent card (White surface, Admiralty Navy border) | Displays the **only** currently active vehicle. Shows plate, arrival time, safety decision, fuel endorsement, cylinder test status, and dual-engine AI verification result. |
+| **Done Button** | Primary green button with atomic state locking | Tapping **Done** disables the button immediately (optimistic UI), sends `POST /api/v1/queue/done`, marks current event COMPLETED, atomically promotes the oldest queued event, and displays the next pre-prepared vehicle with zero attendant rescan delay. |
+| **UPCOMING / QUEUE Drawer** | Ordered tabular queue list | Shows vehicles waiting behind the active vehicle. Each card shows queue position, event ID, recognized plate, dual-verification badge, and safety status. Automatically refreshes on SSE queue events. |
+| **Camera & Engine Health Bar** | Status indicator strip in header | Shows camera connection status (CAMERA_ONLINE vs CAMERA_OFFLINE), RTSP FPS, Local OCR engine state, and GPT-4o Mini Vision API latency. |
+
+---
+
+## 6. GPT-4o Mini Double Verification UI Badges & Visual Design
+
+To establish trust with operators, supervisors, and safety auditors, the interface incorporates dedicated visual cues highlighting the multi-frame AI double verification pipeline:
+
+### 6.1 Status Badges
+
+| Badge | Appearance | Meaning & Context |
+| :--- | :--- | :--- |
+| `🤖 Dual Confirmed` | Solid Navy background (`#04127B`), White text, Gold robot icon | Local OCR majority consensus and GPT-4o Mini Vision API agreed 100% on the registration number. |
+| `AI Context Override` | Safety Gold background (`#FFAF00`), Deep Navy text (`#04127B`) | Local OCR had optical ambiguity (e.g. 8 vs B), and GPT-4o Mini successfully resolved the true character. |
+| `OCR Only (Fallback)` | Muted Grey background (`#64748B`), White text | OpenAI Vision API was unreachable or timed out; vehicle was verified using local multi-frame consensus. |
+| `Plate Under Review` | Safety Amber background (`#F59E0B`), White text | Local OCR and GPT-4o Mini returned conflicting readings; routed to supervisor review. |
+
+### 6.2 Supervisor Multi-Frame Inspection Drawer
+When an event requires manual confirmation (`REVIEW_REQUIRED`), clicking **Inspect Evidence** opens a slide-over panel displaying:
+1. **Candidate Plate Strip:** Side-by-side thumbnails of the 3–5 best camera frames captured by the quality gate.
+2. **Local OCR Analysis:** Tabular list of per-frame raw OCR readings and confidence scores.
+3. **GPT-4o Mini AI Analysis:** Exact JSON output from GPT-4o Mini, including detected state code, series, numbers, and optical disambiguation notes.
+4. **Resolution Input:** Attendant or supervisor can confirm the AI-extracted plate with a single click or type a manual correction with mandatory supervisor PIN logging.
+
+---
+
+## 7. Typography Hierarchy & Form Design
+
+### 7.1 Typography Hierarchy
 * **Primary Sans:** `Inter`, `Segoe UI`, `Roboto`, -apple-system, sans-serif.
 * **Monospace (Plates & Serials):** `SFMono-Regular`, `Consolas`, `Monaco`, monospace.
 
@@ -149,13 +226,13 @@ The island monitor operates in full-screen mode on outdoor dispenser monitors mo
 +--------------------------------------------------------------------------------------+
 ```
 
-### 5.2 Form Controls & Role Selector Buttons
+### 7.2 Form Controls & Role Selector Buttons
 * **Role Selection Tabs:** Quick-switch buttons for `Station Operator`, `Safety Inspector`, and `Administrator` that auto-fill corresponding enterprise test credentials.
 * **Input Fields:** Crisp 1px solid borders (`#CBD5E1`), 8px border radius, 12px padding, subtle shadow. Active focus state displays a solid 2px outline in Brand Navy (`#04127B`).
 
 ---
 
-## 6. Commercial Portal Footer & Telemetry Meta
+## 8. Commercial Portal Footer & Telemetry Meta
 
 The portal footer confirms private commercial identity and platform operational status:
 

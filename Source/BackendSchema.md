@@ -3,23 +3,29 @@
 **Project Name:** SmartFuel — Commercial Enterprise CNG Dispensing & Safety Management Automation Platform  
 **Developer & Provider:** SmartFuel Technologies Pvt. Ltd.  
 **Database Engine:** PostgreSQL 16 Enterprise / Relational Architecture with Partitioning  
-**Document Reference:** SF-ENT-DB-2026-V2.0  
+**Document Reference:** SF-ENT-DB-2026-V4.0  
 **Status:** Production Deployed (`https://fuel.cscsetu.com`)  
 **Classification:** Proprietary / Commercial B2B  
+**Changelog:** V4.0 adds GPT-4o Mini Vision API double verification (ai_verification_logs table, dual verification fields in vehicle_events and inspection_records). V3.0 incorporated CNG Connect Complete Vehicle Recognition & Queue Management Logic (Version 1.0, 15 Oct 2026).
 
 ---
 
 ## 1. Entity-Relationship (ER) Architecture Overview
 
-The SmartFuel relational schema models enterprise organizational hierarchy (Energy Provider / CGD -> Retail Station -> Dispenser Bay), dual vehicle verification data (Vehicle Registration & Cylinder Hydrotest Records), live inspection telemetry, hardware interlocks, and an immutable cryptographic audit ledger.
+The SmartFuel relational schema models enterprise organizational hierarchy (Energy Provider / CGD -> Retail Station -> Dispenser Bay), vehicle event tracking with queue management, multi-frame OCR observations, dual vehicle verification data (Vehicle Registration & Cylinder Hydrotest Records), live inspection telemetry, hardware interlocks, and an immutable cryptographic audit ledger.
 
 ```mermaid
 erDiagram
     MASTER_CGD_COMPANIES ||--o{ MASTER_STATIONS : operates
     MASTER_STATIONS ||--o{ MASTER_DISPENSER_BAYS : contains
     MASTER_STATIONS ||--o{ SYSTEM_USERS : employs
-    MASTER_DISPENSER_BAYS ||--o{ INSPECTION_RECORDS : logs
-    SYSTEM_USERS ||--o{ INSPECTION_RECORDS : operates
+    MASTER_DISPENSER_BAYS ||--o{ VEHICLE_EVENTS : monitors
+    SYSTEM_USERS ||--o{ VEHICLE_EVENTS : operates
+    
+    VEHICLE_EVENTS ||--o{ OCR_OBSERVATIONS : captures
+    VEHICLE_EVENTS ||--o| AI_VERIFICATION_LOGS : verifies
+    VEHICLE_EVENTS ||--o| VEHICLE_QUEUE : tracks
+    VEHICLE_EVENTS ||--o{ INSPECTION_RECORDS : logs
     
     VEHICLE_RC_REGISTRY ||--o{ CYLINDER_HYDROTEST_REGISTRY : links
     ACCREDITED_TESTING_STATIONS ||--o{ CYLINDER_HYDROTEST_REGISTRY : certifies
@@ -119,10 +125,148 @@ CREATE INDEX idx_revoked_expiry ON revoked_sessions (expires_at);
 
 ---
 
-### 2.3 Compliance & Safety Registries
+### 2.3 Vehicle Event Tracking & Queue Management (NEW — CNG Connect Queue Logic)
 
 ```sql
--- 6. Vehicle Registration & Fuel Endorsement Records
+-- 6. Vehicle Events (Unique immutable event per detected vehicle)
+-- Each physical vehicle that enters the camera zone gets exactly one event.
+-- Multiple frames and OCR observations are stored under this event.
+CREATE TABLE vehicle_events (
+    event_id VARCHAR(60) PRIMARY KEY,               -- e.g., 'EVT-2026-10-12-DL104-0042'
+    station_id INT NOT NULL REFERENCES master_stations(id),
+    bay_number INT NOT NULL,
+    camera_id VARCHAR(50),                          -- Source camera/lane
+    vehicle_track_id VARCHAR(80),                   -- Visual tracking ID (not plate-based)
+    
+    -- State machine
+    state VARCHAR(30) NOT NULL DEFAULT 'DETECTED' CHECK (
+        state IN ('DETECTED', 'CAPTURING', 'OCR_PROCESSING', 'RECOGNIZED',
+                  'AI_VERIFICATION', 'VALIDATING', 'VERIFIED', 'REVIEW_REQUIRED',
+                  'UNREADABLE', 'ACTIVE', 'QUEUED', 'COMPLETED', 'EXPIRED', 'CLOSED', 'DUPLICATE')
+    ),
+    
+    -- Recognition results
+    plate_candidate VARCHAR(16),                    -- Current normalized OCR candidate
+    ocr_agreement_score DECIMAL(5, 2),              -- Cross-frame agreement ratio
+    recognition_method VARCHAR(40),                 -- 'multi_frame_ocr', 'manual_entry', 'retry_ocr'
+    
+    -- AI Double Verification (GPT-4o Mini Vision API)
+    ai_verified_plate VARCHAR(16),                  -- Plate returned by GPT-4o Mini Vision API
+    ai_model VARCHAR(30) DEFAULT 'gpt-4o-mini',     -- AI vision model utilized
+    ai_confidence DECIMAL(5, 2),                    -- AI model confidence percentage
+    ai_status VARCHAR(30) DEFAULT 'PENDING' CHECK (
+        ai_status IN ('PENDING', 'VERIFIED', 'DISAGREEMENT', 'SKIPPED_OFFLINE', 'TIMEOUT')
+    ),
+    dual_verification_match BOOLEAN,                -- True if Local OCR consensus == GPT-4o Mini
+    ai_latency_ms INT,                              -- Round-trip time in milliseconds for AI call
+    ai_response_payload JSONB,                      -- Full raw structured output from GPT-4o Mini
+    
+    -- Verification results
+    verification_status VARCHAR(30) DEFAULT 'PENDING' CHECK (
+        verification_status IN ('PENDING', 'VERIFIED', 'NO_RECORD_FOUND',
+                                'DATA_UNAVAILABLE', 'REVIEW_REQUIRED', 'FAILED')
+    ),
+    final_decision VARCHAR(20),                     -- 'APPROVED', 'HOLD', 'REVIEW'
+    decision_reason TEXT,
+    
+    -- Queue management
+    queue_position INT,                             -- Backend-managed waiting order
+    
+    -- Timing
+    detected_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen_at TIMESTAMPTZ,
+    promoted_to_active_at TIMESTAMPTZ,
+    operator_completion_at TIMESTAMPTZ,             -- Done timestamp
+    completed_by INT REFERENCES system_users(id),   -- Operator who clicked Done
+    
+    -- Evidence
+    best_frame_path VARCHAR(255),                   -- Path to best quality frame
+    error_code VARCHAR(60),                         -- Machine-readable failure/review reason
+    
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_events_station_state ON vehicle_events (station_id, bay_number, state);
+CREATE INDEX idx_events_station_queue ON vehicle_events (station_id, bay_number, queue_position)
+    WHERE state = 'QUEUED';
+CREATE INDEX idx_events_plate ON vehicle_events (plate_candidate);
+CREATE INDEX idx_events_detected ON vehicle_events (detected_at DESC);
+
+-- 7. OCR Observations (Individual per-frame OCR attempts under a vehicle event)
+CREATE TABLE ocr_observations (
+    id BIGSERIAL PRIMARY KEY,
+    event_id VARCHAR(60) NOT NULL REFERENCES vehicle_events(event_id) ON DELETE CASCADE,
+    frame_sequence INT NOT NULL,                    -- Frame number within this event
+    
+    -- OCR output
+    raw_ocr_text VARCHAR(30),                       -- Raw OCR output before normalization
+    normalized_text VARCHAR(16),                    -- Cleaned/normalized plate text
+    ocr_confidence DECIMAL(5, 2),                   -- Engine-reported confidence
+    
+    -- Frame quality
+    image_path VARCHAR(255),                        -- Stored frame image reference
+    image_quality_score DECIMAL(5, 3),              -- Computed quality (blur, illumination, size)
+    is_best_frame BOOLEAN DEFAULT FALSE,            -- Selected as best frame for this event
+    
+    -- Processing
+    preprocessing_applied VARCHAR(100),             -- 'none', 'contrast_enhanced', 'sharpened', 'cropped'
+    is_retry BOOLEAN DEFAULT FALSE,                 -- Whether this was a retry attempt
+    sent_to_ai BOOLEAN DEFAULT FALSE,               -- Included in 3-5 frame batch to GPT-4o Mini
+    
+    captured_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_event_frame UNIQUE (event_id, frame_sequence)
+);
+
+CREATE INDEX idx_ocr_event ON ocr_observations (event_id);
+
+-- 7b. AI Verification Logs (Dedicated Audit for GPT-4o Mini Vision API Transactions)
+CREATE TABLE ai_verification_logs (
+    id BIGSERIAL PRIMARY KEY,
+    event_id VARCHAR(60) NOT NULL REFERENCES vehicle_events(event_id) ON DELETE CASCADE,
+    model_name VARCHAR(40) NOT NULL DEFAULT 'gpt-4o-mini',
+    frames_sent INT NOT NULL,                       -- Number of candidate images sent (3-5)
+    prompt_tokens INT,
+    completion_tokens INT,
+    total_tokens INT,
+    latency_ms INT NOT NULL,
+    raw_ai_response JSONB NOT NULL,                 -- Complete structured response from OpenAI
+    extracted_plate VARCHAR(16),
+    ai_confidence DECIMAL(5, 2),
+    local_ocr_consensus VARCHAR(16),
+    match_status VARCHAR(30) NOT NULL,              -- 'EXACT_MATCH', 'AI_OVERRIDE', 'AI_FALLBACK', 'TIMEOUT'
+    invoked_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX idx_ai_logs_event ON ai_verification_logs (event_id);
+
+-- 8. Vehicle Queue State (Backend-owned ACTIVE/QUEUED ordering)
+-- This table provides a fast view of the current queue per bay.
+CREATE TABLE vehicle_queue (
+    id SERIAL PRIMARY KEY,
+    station_id INT NOT NULL REFERENCES master_stations(id),
+    bay_number INT NOT NULL,
+    event_id VARCHAR(60) NOT NULL REFERENCES vehicle_events(event_id) ON DELETE CASCADE,
+    queue_state VARCHAR(20) NOT NULL CHECK (
+        queue_state IN ('ACTIVE', 'QUEUED')
+    ),
+    queue_position INT NOT NULL,                    -- 0 = ACTIVE, 1+ = QUEUED order
+    entered_queue_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    promoted_at TIMESTAMPTZ,                        -- When promoted from QUEUED to ACTIVE
+    
+    -- Constraint: Only one ACTIVE event per bay at any time
+    CONSTRAINT uq_active_per_bay UNIQUE (station_id, bay_number, queue_state)
+        -- Note: Enforced at application layer for ACTIVE state
+);
+
+CREATE INDEX idx_queue_bay ON vehicle_queue (station_id, bay_number, queue_state);
+CREATE INDEX idx_queue_position ON vehicle_queue (station_id, bay_number, queue_position);
+```
+
+---
+
+### 2.4 Compliance & Safety Registries
+
+```sql
+-- 9. Vehicle Registration & Fuel Endorsement Records
 CREATE TABLE vehicle_rc_registry (
     plate_number VARCHAR(16) PRIMARY KEY,           -- e.g., 'DL01AB1234', '22BH1234AA'
     chassis_number VARCHAR(30) NOT NULL,            -- Encrypted at application layer
@@ -141,7 +285,7 @@ CREATE TABLE vehicle_rc_registry (
 );
 CREATE INDEX idx_vehicle_cng_status ON vehicle_rc_registry (cng_endorsed, rc_status);
 
--- 7. Accredited Hydrotest Testing Stations
+-- 10. Accredited Hydrotest Testing Stations
 CREATE TABLE accredited_testing_stations (
     id SERIAL PRIMARY KEY,
     testing_license_number VARCHAR(60) UNIQUE NOT NULL, -- e.g., 'TS/HQ/CYL/TEST/2021/119'
@@ -154,7 +298,7 @@ CREATE TABLE accredited_testing_stations (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
--- 8. Cylinder Hydrostatic Test Registry (Rule 35, Gas Cylinders Rules 2016)
+-- 11. Cylinder Hydrostatic Test Registry (Rule 35, Gas Cylinders Rules 2016)
 CREATE TABLE cylinder_hydrotest_registry (
     id SERIAL PRIMARY KEY,
     cylinder_serial_number VARCHAR(80) NOT NULL,    -- Stamped cylinder serial
@@ -177,19 +321,27 @@ CREATE INDEX idx_cylinder_expiry ON cylinder_hydrotest_registry (hydrotest_expir
 
 ---
 
-### 2.4 Live Ingress Inspection & Dispenser Interlock Telemetry
+### 2.5 Live Ingress Inspection & Dispenser Interlock Telemetry
 
 ```sql
--- 9. Ingress Inspection Records (Time-Range Partitioned for High Volume)
+-- 12. Ingress Inspection Records (Time-Range Partitioned for High Volume)
+-- Now linked to vehicle_events for full traceability
 CREATE TABLE inspection_records (
     id BIGSERIAL NOT NULL,
+    event_id VARCHAR(60) REFERENCES vehicle_events(event_id),  -- Link to vehicle event
     station_id INT NOT NULL REFERENCES master_stations(id),
     bay_number INT NOT NULL,
     scanned_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     recognized_plate VARCHAR(16) NOT NULL,
     confirmed_plate VARCHAR(16) NOT NULL,
     ocr_confidence DECIMAL(5, 2) NOT NULL,          -- e.g., 96.40%
-    capture_method VARCHAR(40) NOT NULL,            -- 'automatic_anpr_camera', 'manual_plate_entry'
+    ocr_observation_count INT DEFAULT 1,            -- Number of frames used for recognition
+    cross_frame_agreement DECIMAL(5, 2),            -- Multi-frame agreement ratio
+    capture_method VARCHAR(40) NOT NULL,            -- 'multi_frame_ocr', 'manual_plate_entry', 'retry_ocr'
+    ai_model VARCHAR(30) DEFAULT 'gpt-4o-mini',     -- AI vision engine used for double verification
+    ai_verified_plate VARCHAR(16),                  -- Plate recognized by GPT-4o Mini
+    dual_verification_match BOOLEAN,                -- True if local OCR and GPT-4o Mini agreed
+    ai_latency_ms INT,                              -- GPT-4o Mini Vision API turnaround latency
     vehicle_rc_status VARCHAR(20) NOT NULL,         -- 'PASS', 'FAIL', 'NOT_FOUND'
     cylinder_hydrotest_status VARCHAR(20) NOT NULL, -- 'PASS', 'EXPIRED', 'MISSING_CERT'
     final_decision VARCHAR(20) NOT NULL,           -- 'APPROVED', 'HOLD', 'REVIEW'
@@ -208,11 +360,13 @@ CREATE TABLE inspection_records_2026_11 PARTITION OF inspection_records
 
 CREATE INDEX idx_inspections_plate_time ON inspection_records (confirmed_plate, scanned_at DESC);
 CREATE INDEX idx_inspections_station_decision ON inspection_records (station_id, final_decision);
+CREATE INDEX idx_inspections_event ON inspection_records (event_id);
 
--- 10. Hardware Dispenser Interlock Relay Execution Logs
+-- 13. Hardware Dispenser Interlock Relay Execution Logs
 CREATE TABLE dispenser_interlock_events (
     id BIGSERIAL PRIMARY KEY,
     inspection_id BIGINT NOT NULL,
+    event_id VARCHAR(60) REFERENCES vehicle_events(event_id),
     scanned_at TIMESTAMPTZ NOT NULL,
     bay_number INT NOT NULL,
     relay_command VARCHAR(20) NOT NULL,             -- 'UNLOCK_SOLENOID', 'LOCK_SOLENOID'
@@ -221,10 +375,11 @@ CREATE TABLE dispenser_interlock_events (
     executed_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
--- 11. Station Supervisor Manual Overrides (Accountability & Audit)
+-- 14. Station Supervisor Manual Overrides (Accountability & Audit)
 CREATE TABLE supervisor_overrides (
     id SERIAL PRIMARY KEY,
     inspection_id BIGINT NOT NULL,
+    event_id VARCHAR(60) REFERENCES vehicle_events(event_id),
     scanned_at TIMESTAMPTZ NOT NULL,
     supervisor_id INT NOT NULL REFERENCES system_users(id),
     reason_code VARCHAR(40) NOT NULL CHECK (
@@ -239,22 +394,25 @@ CREATE TABLE supervisor_overrides (
 
 ---
 
-### 2.5 Tamper-Evident Cryptographic Audit Ledger
+### 2.6 Tamper-Evident Cryptographic Audit Ledger
 
 ```sql
--- 12. Immutable Audit Trail Ledger (Chained SHA-256 Hashes)
+-- 15. Immutable Audit Trail Ledger (Chained SHA-256 Hashes)
+-- Now captures vehicle event state transitions, queue promotions, and Done transactions
 CREATE TABLE audit_trail_ledger (
     sequence_id BIGSERIAL PRIMARY KEY,
     happened_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     actor_id INT REFERENCES system_users(id),
     actor_ip VARCHAR(45) NOT NULL,
-    action_code VARCHAR(80) NOT NULL,               -- e.g., 'INSPECTION_DECISION', 'SUPERVISOR_OVERRIDE'
-    subject_entity VARCHAR(80) NOT NULL,            -- e.g., 'plate:DL01AB1234', 'user:admin@smartfuel.in'
+    action_code VARCHAR(80) NOT NULL,               -- e.g., 'INSPECTION_DECISION', 'SUPERVISOR_OVERRIDE',
+                                                    --       'QUEUE_PROMOTE', 'EVENT_COMPLETED', 'DONE_CLICKED'
+    subject_entity VARCHAR(80) NOT NULL,            -- e.g., 'plate:DL01AB1234', 'event:EVT-2026-10-12-DL104-0042'
     event_details JSONB NOT NULL,
     previous_record_hash VARCHAR(64) NOT NULL,      -- SHA-256 hash of previous row
     current_record_hash VARCHAR(64) NOT NULL        -- SHA-256(prev_hash || timestamp || action || payload)
 );
 CREATE INDEX idx_audit_happened ON audit_trail_ledger (happened_at DESC);
+CREATE INDEX idx_audit_event ON audit_trail_ledger (subject_entity);
 ```
 
 ---
@@ -263,6 +421,8 @@ CREATE INDEX idx_audit_happened ON audit_trail_ledger (happened_at DESC);
 
 | Data Category | Operational Hot Tier | Cold Archive Tier | Retention Period |
 | :--- | :--- | :--- | :--- |
+| **Vehicle Events & Queue State** | 90 Days in PostgreSQL NVMe | S3 Archive (JSON/Parquet) | 5 Years (Safety Audit Mandate) |
+| **OCR Observations & Frame Evidence** | 30 Days in PostgreSQL + Object Storage | Compressed archive in S3 | 1 Year (Recognition Accuracy Auditing) |
 | **Inspection Telemetry** | 90 Days in PostgreSQL NVMe | S3 Glacier Deep Archive (CSV/Parquet) | 5 Years (Safety Audit Mandate) |
 | **Camera Ingress Images** | 30 Days in Fast Object Storage | Compressed JPEG (80% quality) in S3 | 1 Year (Forecourt Incident Review) |
 | **Audit Ledger & Overrides** | Permanent Hot Storage | Replicated to Write-Once-Read-Many (WORM) | Indefinite (Immutable Legal Record) |
