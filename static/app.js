@@ -444,9 +444,9 @@ function showResult(data, sourceDataUrl = '') {
   } else if (isNotInDb) {
     reasonsList.innerHTML = `<li>Vehicle number <strong>${safe(plate)}</strong> was searched in the database — no matching record found.</li><li>Data is not available in the database. Dispensing CNG is on hold.</li>`;
   } else if (r.status === 'expired') {
-    reasonsList.innerHTML = `<li>Cylinder hydrotesting validity expired in database records.</li><li>Please renew the expired cylinder test certificate at a PESO testing station.</li>`;
+    reasonsList.innerHTML = `<li>Cylinder hydrotesting validity expired in database records.</li><li>Please renew the expired cylinder test certificate at an authorized testing station.</li>`;
   } else if (r.status === 'not_cng') {
-    reasonsList.innerHTML = `<li>CNG fuel retro-fitment is not endorsed on the vehicle Registration Certificate (RC).</li><li>Fueling is strictly prohibited under Rule 115-A of CMVR 1989.</li>`;
+    reasonsList.innerHTML = `<li>CNG fuel retro-fitment is not endorsed on the vehicle Registration Certificate (RC).</li><li>Fueling is withheld until CNG retro-fitment endorsement is verified.</li>`;
   } else {
     reasonsList.innerHTML = `<li>${safe(r.explanation || 'Vehicle record is not verified in database.')}</li><li>Station supervisor review required.</li>`;
   }
@@ -738,7 +738,7 @@ async function refreshHealth() {
         <div><strong>Database Engine:</strong> <span style="color:var(--gov-green);font-weight:700;">● ${safe(s.database)}</span></div>
         <div><strong>OCR Engine:</strong> <span style="color:${s.tesseract_ready ? 'var(--gov-green)' : 'var(--gov-red)'};font-weight:700;">● ${s.tesseract_ready ? 'Tesseract OCR Ready' : 'Tesseract Missing'}</span></div>
         <div><strong>Tesseract Binary Path:</strong> <code>${safe(s.tesseract_path || 'PATH environment')}</code></div>
-        <div><strong>Statutory Protocol:</strong> PESO Rule 35 & MoRTH CMVR 1989</div>
+        <div><strong>Compliance Protocol:</strong> Standard CNG Cylinder Safety &amp; Vehicle RC Validation</div>
       </div>
     `;
   } catch (e) { toast(e.message, true); }

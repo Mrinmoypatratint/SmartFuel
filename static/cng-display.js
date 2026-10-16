@@ -35,7 +35,7 @@ function updateActiveStatus(row) {
     }
     if (descWrap) descWrap.className = 'process-sub-banner pass';
     if (subIcon) subIcon.textContent = '✔';
-    if (descText) descText.textContent = 'All statutory checks passed. Dual RC & PESO verification active. Dispenser solenoid relay clear.';
+    if (descText) descText.textContent = 'All safety checks passed. Vehicle RC & cylinder compliance verified. Dispenser solenoid relay clear.';
   } else if (state === 'hold') {
     if (dot) dot.className = 'status-check-circle hold';
     if (badge) {
